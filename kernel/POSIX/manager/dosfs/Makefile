@@ -14,8 +14,8 @@ CFLAGS=-Wall -DDEBUG -I -I. -I$(ROOT) -I../../kernlib -I../../../ITRON -I../../.
 all: libdosfs.a
 
 libdosfs.a: $(OBJS)
-	ar rv libdosfs.a $(OBJS)
-	ranlib libdosfs.a
+	$(AR) rv libdosfs.a $(OBJS)
+	$(RANLIB) libdosfs.a
 
 clean:
 	rm -f $(OBJS) *~ libdosfs.a

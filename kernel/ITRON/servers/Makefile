@@ -1,19 +1,18 @@
 #
-# @(#) $Header: /Users/tonpa/Downloads/b-free/b-free/kernel/ITRON/servers/Makefile,v 1.1.1.1 2003/02/05 03:57:12 monaka Exp $
-#
+# Updated for modern LLVM/Clang cross-compilation.
+# Accepts X86_CC, X86_LD from parent (via Rules.mk).
 #
 
 TARGET =	port-manager
 LOAD_POINT =	0x00010000
 ENTRY =		_main
-#LD = /usr/local/bin/ld		# ZIMAGE タイプの実行ファイルを作成する
-				# ことができる LD を使う。
-#LD=/usr/bin/ld
-LD=ld
 
-CC=gcc
-INC=-I../../ITRON/h -I../../ITRON/i386
-CFLAGS=$(INC) -O2 -fno-builtin
+CC := $(if $(X86_CC),$(X86_CC),gcc -m32)
+LD := $(if $(X86_LD),$(X86_LD),ld -m elf_i386)
+
+INC=-I../../ITRON/h -I../../ITRON/i386 -I../../ITRON/ibmpc
+CFLAGS=$(INC) -O2 -fno-builtin -ffreestanding -nostdlib -std=gnu89 \
+       -Wno-implicit-function-declaration -Wno-return-type
 
 
 OBJS=port-manager.o database.o
@@ -22,8 +21,8 @@ OBJS=port-manager.o database.o
 all: $(TARGET)
 
 
-$(TARGET): $(OBJS)
-	$(LD) -static -o $(TARGET) -e $(ENTRY) -Ttext=$(LOAD_POINT)  $(OBJS) ../kernlib/libkernel.a	
+$(TARGET): $(OBJS) ../kernlib/libkernel.a
+	$(LD) -static -o $(TARGET) -e $(ENTRY) --image-base=$(LOAD_POINT) -Ttext=$(LOAD_POINT) $(OBJS) ../kernlib/libkernel.a
 
 
 clean:

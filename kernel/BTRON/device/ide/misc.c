@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -22,10 +22,10 @@ static char rcsid[] =
  * From eota-0.3.4.tgz
  *
  * Revision 1.2  1997/07/06 11:47:57  night
- * ╔г╔п╔ц╔╟й╦╓н╟З©Т╩ьдЙ╓╛ю╣╓╥╓╞╓й╓╚╓ц╓©╓н╓г╫╓ю╣╓╥╓©║ё
+ * Ц┐┤Ц┐░Ц┐┐Ц┌╟Ф√┤Ц│╝Е╪∙Ф∙╟Ф▄┤Е╝ Ц│▄Ф╜ёЦ│≈Ц│▐Ц│╙Ц│▀Ц│ёЦ│÷Ц│╝Ц│╖Д©╝Ф╜ёЦ│≈Ц│÷Ц─┌
  *
  * Revision 1.1  1997/05/06 12:43:04  night
- * ╨г╫И╓непо©║ё
+ * Ф°─Е┬²Ц│╝Г≥╩И▄╡Ц─┌
  *
  *
  */
@@ -47,7 +47,7 @@ static ER vprintf(B * fmt, VP arg0);
 
 
 
-/* init_log - ╔М╔╟╫пно╣║╧╫╓Р╫И╢Э╡╫╓╧╓К
+/* init_log - Ц┐╜Ц┌╟Е┤╨Е┼⌡Ф╘÷Ф╖▀Ц┌▓Е┬²Ф°÷Е▄√Ц│≥Ц┌▀
  *
  *
  */
@@ -83,7 +83,7 @@ void print_digit(UW d, UW base)
     }
 }
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x)))
+#define INC(p,x)	(p = (void *)(((char *)(p)) + sizeof (x)))
 
 /*
  *
@@ -114,7 +114,7 @@ static ER vprintf(B * fmt, VP arg0)
 
 	    case 'd':
 		if ((W) * ap < 0) {
-		    ((W) * ap) = -((W) * ap);
+		    *ap = (VP)(-(W)*ap);
 		    putc('-', log_port);
 		}
 		print_digit((W) * ap, 10);
@@ -151,8 +151,8 @@ W put_string(B * line, ID port)
 
 W putc(int ch, ID port)
 {
-    DDEV_REQ req;		/* мв╣А╔я╔╠╔ц╔х */
-    DDEV_RES res;		/* йжеЗ╔я╔╠╔ц╔х */
+    DDEV_REQ req;		/* Х╕│Ф╠┌Ц┐▒Ц┌╠Ц┐┐Ц┐┬ */
+    DDEV_RES res;		/* Х©■Г╜■Ц┐▒Ц┌╠Ц┐┐Ц┐┬ */
     W rsize;
     ER error;
     W i;
@@ -167,7 +167,7 @@ W putc(int ch, ID port)
     if (error != E_OK) {
 	dbg_printf("cannot send packet(%s, %d). %d\n", __FILE__, __LINE__,
 		   error);
-	return;
+	return (0);
     }
     rsize = sizeof(res);
     error = rcv_mbf(&res, (INT *) & rsize, dev_recv);
@@ -181,9 +181,9 @@ W putc(int ch, ID port)
 
 
 
-/* _assert - ASSERT ╔ч╔╞╔М╓к╓Х╓ц╓ф╦ф╓с╫п╓╣╓Л╓К╢ь©Т
+/* _assert - ASSERT Ц┐·Ц┌╞Ц┐╜Ц│╚Ц┌┬Ц│ёЦ│╕Е▒╪Ц│ЁЕ┤╨Ц│∙Ц┌▄Ц┌▀И√╒Ф∙╟
  *
- * ╔А╔ц╔╩║╪╔╦╓Р╫пно╓╥║╒╔в╔М╔╟╔И╔Ю╓Р╫╙н╩╓╧╓К║ё
+ * Ц┐║Ц┐┐Ц┌╩Ц┐╪Ц┌╦Ц┌▓Е┤╨Е┼⌡Ц│≈Ц─│Ц┐≈Ц┐╜Ц┌╟Ц┐╘Ц┐═Ц┌▓Г╣┌Д╨├Ц│≥Ц┌▀Ц─┌
  *
  */
 void _assert(B * msg)

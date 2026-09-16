@@ -1,27 +1,40 @@
 # $Revision: 1.1.1.1 $
 #
+# Updated for modern LLVM/Clang cross-compilation.
+# Accepts X86_CC, X86_LD, PLATFORM from parent Makefile (via Rules.mk).
 #
 COMMON=../../../include
 
+# Toolchain â€” override from parent or fall back to legacy defaults
+CC     := $(if $(X86_CC),$(X86_CC),gcc)
+LD     := $(if $(X86_LD),$(X86_LD),ld -m elf_i386)
+AR     := $(if $(AR),$(AR),/opt/homebrew/opt/llvm/bin/llvm-ar)
+RANLIB := $(if $(RANLIB),$(RANLIB),/opt/homebrew/opt/llvm/bin/llvm-ranlib)
+
+# Platform â€” IBMPC (default) or PC9801
+PLATFORM ?= IBMPC
+
+ifeq ($(PLATFORM),PC9801)
+  HAL_DIR   = ../pc9801
+  PLAT_FLAG = -DPC9801
+else
+  HAL_DIR   = ../ibmpc
+  PLAT_FLAG = -DIBMPC
+endif
 
 #DEBUG=-DTSKSW_DEBUG
 DEBUG=-DKEYBOARD_DEBUG
-#IDENT=-DTIMER_TEST -DI386 -DAUTO_START -DIBMPC $(DEBUG)
-IDENT=-DTIMER_TEST -DI386 -DIBMPC -DAUTO_START -DPORTMANAGER -DKERNLIB -DITRON $(DEBUG)
+IDENT=-DTIMER_TEST -DI386 $(PLAT_FLAG) -DAUTO_START -DPORTMANAGER -DKERNLIB -DITRON $(DEBUG)
 
-CPP=/lib/cpp
-#LD=/usr/local/bin/ld		# ZMAGIC ¥¿¥¤¥×¤Î¼Â¹Ô¥Õ¥¡¥¤¥ë¤òºî¤ë¤³¤È¤¬¤Ç¤­¤ë
-#                                # ¸Å¤¤ ld ¤ò»È¤¦¤³¤È
-#LD=/usr/bin/ld			# ¥·¥¹¥Æ¥à¤Ë¸Å¤¤¼Â¹Ô¥Õ¥¡¥¤¥ë¤òºî¤ë¤³¤È¤¬¤Ç¤­¤ë 
-				# ld ¤¬¤¢¤ë¾ì¹ç¤Ë¤Ï¤³¤Á¤é¤ò»È¤¦¡£
-#AS=/usr/local/bin/as-new
-LD=ld
-AS=as
-CFLAGS=-O2 -fno-builtin -I. -I.. -I../h -I../i386 -I../ibmpc -I$(COMMON) -Wall -fno-builtin $(IDENT)
-CC=gcc
+CFLAGS=-O2 -fno-builtin -ffreestanding -nostdlib \
+       -std=gnu89 \
+       -Wno-implicit-function-declaration -Wno-return-type \
+       -I. -I.. -I../h -I../i386 -I$(HAL_DIR) -I$(COMMON) \
+       -Wall $(IDENT)
 MKDEPEND=$(CC) -M
 STARTADDR=0x80020000
 ENTRY=startup
+
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -79,13 +92,15 @@ SRCS=main.c memory.c task.c time.c version.c error.c dummy.c printf.c \
 all: itron.image
 
 itron.image: $(OBJS) libkernel.a port_manager
-	$(LD) -static -o itron.image -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
+	$(LD) -static -o itron.image -e $(ENTRY) --image-base=$(STARTADDR) -Ttext=$(STARTADDR) $(OBJS) $(OTHEROBJ)
+
+.PHONY: libkernel.a port_manager
 
 libkernel.a:
-	${MAKE} -C ../kernlib
+	$(MAKE) -C ../kernlib X86_CC="$(CC)" X86_LD="$(LD)" AR="$(AR)" RANLIB="$(RANLIB)"
 
 port_manager:
-	${MAKE} -C ../servers
+	$(MAKE) -C ../servers X86_CC="$(CC)" X86_LD="$(LD)" AR="$(AR)" RANLIB="$(RANLIB)"
 
 tags:
 	etags ../*/*.[hcs]

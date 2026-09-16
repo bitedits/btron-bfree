@@ -8,7 +8,7 @@ static void	write_digit ();
 static void	write_digit2 ();
 
 
-#define INC(x,type)	(((type *)x) += 1)
+#define INC(x,type)	((x) = (void **)((type *)(x) + 1))
 
 void
 boot_printf (char *fmt, ...)

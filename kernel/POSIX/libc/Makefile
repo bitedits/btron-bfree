@@ -9,7 +9,7 @@ CPP=/lib/cpp
 #ROOT=../../ITRON
 ROOT=../..
 #CFLAGS=-b i486-linuxaout -I. -I$(ROOT) -I../kernlib -I../../ITRON/h -I../../ITRON/i386 -fno-builtin $(IDENT)
-CFLAGS=-O2 -fno-builtin -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/ITRON/h $(IDENT)
+CFLAGS=-O2 -fno-builtin -I. -Iinclude -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/kernlib -I$(ROOT)/ITRON/h $(IDENT)
 CC=gcc
 KP=kp -input-code euc
 MKDEPEND=$(CC) -M
@@ -112,18 +112,18 @@ OBJS=   call_posix.o \
 GTOBJS = others/graphic.o others/tty.o 
 
 all: libc.a libnative.a libgt.a
-	ranlib libc.a
-	ranlib libnative.a
-	ranlib libgt.a
+	$(RANLIB) libc.a
+	$(RANLIB) libnative.a
+	$(RANLIB) libgt.a
 
 libc.a: $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
-	ar rv libc.a $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
+	$(AR) rv libc.a $(OBJS) $(OTHEROBJS) $(STRINGOBJS)
 
 libnative.a: $(OBJS)
-	ar rv libnative.a $(OBJS)
+	$(AR) rv libnative.a $(OBJS)
 
 libgt.a: $(GTOBJS)
-	ar rv $@ $(GTOBJS)
+	$(AR) rv $@ $(GTOBJS)
 
 syscall.o: syscall.c
 

@@ -1,13 +1,15 @@
 
+# Updated: HOST_CC builds native host tools; X86_CC/X86_LD cross-compile the kernel.
+# Accepts HOST_CC, X86_CC, X86_LD, PLATFORM from parent (Rules.mk).
 
 #DEBUG=-DDEBUG
 
-
 INC=../../ITRON/h
 BUILDSRC=build.c $(INC)/itron_module.h
-#CFLAGS=$(DEBUG) -I$(INC)
 CFLAGS=$(DEBUG)
-CC=gcc
+# Native host compiler for the 'build' tool
+# Native host compiler for the 'build' tool
+HOST_CC ?= cc
 
 KERNLIB=kernlib
 MKERNEL=itron
@@ -28,8 +30,11 @@ all: $(PROGRAMS) btron
 btron: build config.tab dummy
 	./build config.tab btron
 
-build: build.o $(BUILDSRC)
-	$(CC) $(CFLAGS) -o build build.o
+build.o: build.c $(INC)/itron_module.h
+	$(HOST_CC) $(CFLAGS) -c build.c -o build.o
+
+build: build.o
+	$(HOST_CC) $(CFLAGS) -o build build.o
 
 clean:
 	rm -f build build.o btron
@@ -55,23 +60,23 @@ dummy:
 	echo '*dummy*'
 
 $(DRIVERS):
-	(cd ../device/$@; ${MAKE})
+	(cd ../device/$@; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 itron:
-	(cd ../../ITRON/make; ${MAKE})
+	(cd ../../ITRON/make; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 posix_lowlib:
-	(cd ../../POSIX/lowlib; ${MAKE})
+	(cd ../../POSIX/lowlib; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 $(SERVERS):
-	(cd ../../POSIX/servers/$@; ${MAKE})
+	(cd ../../POSIX/servers/$@; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 posix_manager:
-	(cd ../../POSIX/manager; ${MAKE})
+	(cd ../../POSIX/manager; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 posix_libc:
-	(cd ../../POSIX/libc; ${MAKE})
+	(cd ../../POSIX/libc; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 
 init:
-	(cd ../init; ${MAKE})
+	(cd ../init; $(MAKE) CC="$(X86_CC)" LD="$(X86_LD)" X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" PLATFORM="$(PLATFORM)" AR="$(AR)" RANLIB="$(RANLIB)")
 

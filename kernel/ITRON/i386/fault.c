@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -21,8 +21,9 @@ Version 2, June 1991
 #include "errno.h"
 #include "task.h"
 #include "func.h"
+#include "../io/io.h"
 
-/* T_INTR_HANDLER	³ä¤ê¹ş¤ß¥Ï¥ó¥É¥éÄêµÁ
+/* T_INTR_HANDLER	å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©å®šç¾©
  *
  */
 typedef struct intr_handler_t {
@@ -31,19 +32,19 @@ typedef struct intr_handler_t {
 } T_INTR_HANDLER;
 
 /*
- *	³ä¤ê¹ş¤ß½èÍı¤ÎÂç°èÊÑ¿ô
+ *	å‰²ã‚Šè¾¼ã¿å‡¦ç†ã®å¤§åŸŸå¤‰æ•°
  *
  */
 #if 0
-BOOL on_interrupt = FALSE;	/* ³ä¤ê¹ş¤ßÃæ¤«¤É¤¦¤«¤ò¼¨¤¹¥Õ¥é¥° */
+BOOL on_interrupt = FALSE;	/* å‰²ã‚Šè¾¼ã¿ä¸­ã‹ã©ã†ã‹ã‚’ç¤ºã™ãƒ•ãƒ©ã‚° */
 #else
 W on_interrupt = 0;
 #endif
 BOOL delayed_dispatch = FALSE;
 
 /*
- * ³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é¥Æ¡¼¥Ö¥ë
- * def_int ¥·¥¹¥Æ¥à¥³¡¼¥ë¤ÇÅĞÏ¿¤¹¤ë¤È¤­¤Ë»ÈÍÑ¤¹¤ë¡£
+ * å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©ãƒ†ãƒ¼ãƒ–ãƒ«
+ * def_int ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã§ç™»éŒ²ã™ã‚‹ã¨ãã«ä½¿ç”¨ã™ã‚‹ã€‚
  */
 struct intr_entry {
     ATR attr;
@@ -55,11 +56,11 @@ struct intr_entry intr_table[128];
 
 
 /**************************************************************************
- * init_interrupt --- ³ä¤ê¹ş¤ßµ¡Ç½¤Î½é´ü²½¤ò¹Ô¤¦¡£
+ * init_interrupt --- å‰²ã‚Šè¾¼ã¿æ©Ÿèƒ½ã®åˆæœŸåŒ–ã‚’è¡Œã†ã€‚
  *
- * °ú¿ô¡§¤Ê¤·
+ * å¼•æ•°ï¼šãªã—
  *
- * ÊÖÃÍ¡§¥¨¥é¡¼ÈÖ¹æ
+ * è¿”å€¤ï¼šã‚¨ãƒ©ãƒ¼ç•ªå·
  *
  */
 W init_interrupt(void)
@@ -68,7 +69,7 @@ W init_interrupt(void)
     GATE_DESC cg;
 
     printk("init_interrupt\n");
-    /* 8259 ¤Î½é´ü²½ */
+    /* 8259 ã®åˆæœŸåŒ– */
     /* init master 8259A */
     outb(MASTER_8259A_COM, 0x11);	/* ICW1 */
     outb(MASTER_8259A_DATA, 0x20);	/* ICW2 */
@@ -107,7 +108,7 @@ W init_interrupt(void)
     set_idt(INT_PROTECTION, KERNEL_CSEG, (W) int13_handler, FAULT_DESC, 0);
     set_idt(INT_PAGE_FAULT, KERNEL_CSEG, (W) int14_handler, FAULT_DESC, 0);
 #if 0
-    /* ¾­Íè¤Î¥¤¥ó¥Æ¥ë¥×¥í¥»¥Ã¥µ¤Î¤¿¤á¤ËÍ½Ìó¤µ¤ì¤Æ¤¤¤ë */
+    /* å°†æ¥ã®ã‚¤ãƒ³ãƒ†ãƒ«ãƒ—ãƒ­ã‚»ãƒƒã‚µã®ãŸã‚ã«äºˆç´„ã•ã‚Œã¦ã„ã‚‹ */
     set_idt(15, KERNEL_CSEG, (int) int15_handler, INTERRUPT_DESC, 0);
 #endif
     set_idt(16, KERNEL_CSEG, (int) int16_handler, FAULT_DESC, 0);
@@ -127,7 +128,7 @@ W init_interrupt(void)
     set_idt(47, KERNEL_CSEG, (int) int47_handler, INTERRUPT_DESC, 0);
 #endif
 
-    /* ¥·¥¹¥Æ¥à¥³¡¼¥ëÍÑ³ä¹ş¤ß¥ë¡¼¥Á¥ó */
+    /* ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ç”¨å‰²è¾¼ã¿ãƒ«ãƒ¼ãƒãƒ³ */
 #if 0
     set_idt(INT_SYSCALL, KERNEL_CSEG, (W) int64_handler, TRAP_DESC, 0);
 #else
@@ -172,11 +173,11 @@ W init_interrupt(void)
 /*************************************************************************
  * reset_intr_mask 
  *
- * °ú¿ô¡§	intn	³ä¤ê¹ş¤ßÈÖ¹æ
+ * å¼•æ•°ï¼š	intn	å‰²ã‚Šè¾¼ã¿ç•ªå·
  *
- * ÊÖÃÍ¡§	¤Ê¤·
+ * è¿”å€¤ï¼š	ãªã—
  *
- * ½èÍı¡§	³ä¤ê¹ş¤ß¥Ş¥¹¥¯¤ò¥ê¥»¥Ã¥È¤¹¤ë¡£
+ * å‡¦ç†ï¼š	å‰²ã‚Šè¾¼ã¿ãƒã‚¹ã‚¯ã‚’ãƒªã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  *
  */
 void reset_intr_mask(W intn)
@@ -191,16 +192,15 @@ void reset_intr_mask(W intn)
 }
 
 /*************************************************************************
- * interrupt --- ³°Éô³ä¤ê¹ş¤ß¤Î½èÍı
+ * interrupt --- å¤–éƒ¨å‰²ã‚Šè¾¼ã¿ã®å‡¦ç†
  *
- * °ú¿ô¡§	intn	³ä¤ê¹ş¤ßÈÖ¹æ
+ * å¼•æ•°ï¼š	intn	å‰²ã‚Šè¾¼ã¿ç•ªå·
  *
- * ÊÖÃÍ¡§	¤Ê¤·
+ * è¿”å€¤ï¼š	ãªã—
  *
- * ½èÍı¡§	³°Éô³ä¤ê¹ş¤ß¤¬È¯À¸¤·¤¿¤È¤­¤Î½èÍı¤ò¹Ô¤¦¡£
+ * å‡¦ç†ï¼š	å¤–éƒ¨å‰²ã‚Šè¾¼ã¿ãŒç™ºç”Ÿã—ãŸã¨ãã®å‡¦ç†ã‚’è¡Œã†ã€‚
  *
  */
-static int mask;
 void interrupt(W intn)
 {
 #if 0
@@ -268,19 +268,19 @@ void interrupt(W intn)
 #endif
     }
 
-    /* ³ä¹ş¤ß¤Î¶Ø»ß¥Õ¥é¥°¤Î OFF */
+    /* å‰²è¾¼ã¿ã®ç¦æ­¢ãƒ•ãƒ©ã‚°ã® OFF */
     if (intn > 40) {	/* slave */
-      mask = ~(1 << (intn - 40));
-      asm("cli");
-      asm("inb $0xA1, %al");
-      asm("andb mask, %al");
-      asm("outb %al, $0xA1");
+      unsigned char m;
+      dis_int();
+      m = inb(0xA1);
+      m &= ~(1 << (intn - 40));
+      outb(0xA1, m);
     } else {		/* master */
-      mask = ~(1 << (intn - 32));
-      asm("cli");
-      asm("inb $0x21, %al");
-      asm("andb mask, %al");
-      asm("outb %al, $0x21");
+      unsigned char m;
+      dis_int();
+      m = inb(0x21);
+      m &= ~(1 << (intn - 32));
+      outb(0x21, m);
     }
 
 #if 0
@@ -298,9 +298,9 @@ void interrupt(W intn)
 }
 
 /*
- * def_int ¥·¥¹¥Æ¥à¥³¡¼¥ë¤Ë¤è¤Ã¤Æ¡¢³ä¤ê¹ş¤ß¥Ï¥ó¥É¥é¤òÅĞÏ¿¤¹¤ë¡£
+ * def_int ã‚·ã‚¹ãƒ†ãƒ ã‚³ãƒ¼ãƒ«ã«ã‚ˆã£ã¦ã€å‰²ã‚Šè¾¼ã¿ãƒãƒ³ãƒ‰ãƒ©ã‚’ç™»éŒ²ã™ã‚‹ã€‚
  *
- * ÅĞÏ¿¤¹¤ë¤È¤­¤Ë¤Ï¡¢Ä¾ÀÜ IDT ¤ÎÃÍ¤ÏÊÑ¹¹¤»¤º¡¢intr_table[] ¤ËÅĞÏ¿¤¹¤ë¡£
+ * ç™»éŒ²ã™ã‚‹ã¨ãã«ã¯ã€ç›´æ¥ IDT ã®å€¤ã¯å¤‰æ›´ã›ãšã€intr_table[] ã«ç™»éŒ²ã™ã‚‹ã€‚
  */
 ER set_interrupt_entry(W intno, FP func, ATR attr)
 {
@@ -317,11 +317,11 @@ ER set_interrupt_entry(W intno, FP func, ATR attr)
 /*************************************************************************
  * trap
  *
- * °ú¿ô¡§
+ * å¼•æ•°ï¼š
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍı¡§
+ * å‡¦ç†ï¼š
  *
  */
 void trap(W intn, W syscallno, VP arg)
@@ -355,11 +355,11 @@ void trap(W intn, W syscallno, VP arg)
 /*************************************************************************
  * page_fault
  *
- * °ú¿ô¡§ 
+ * å¼•æ•°ï¼š 
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍı¡§
+ * å‡¦ç†ï¼š
  *
  */
 void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -373,7 +373,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
     ++on_interrupt;
     if (run_task->page_fault_handler) {
       addr = get_cr2();
-      /* ¥Õ¥©¥ë¥È¤òµ¯¤³¤·¤¿¥¢¥É¥ì¥¹¤¬¥¹¥¿¥Ã¥¯ÎÎ°è¤Ë¤¢¤ì¤Ğ¥Ú¡¼¥¸¤ò³ä¤êÅö¤Æ¤ë */
+      /* ãƒ•ã‚©ãƒ«ãƒˆã‚’èµ·ã“ã—ãŸã‚¢ãƒ‰ãƒ¬ã‚¹ãŒã‚¹ã‚¿ãƒƒã‚¯é ˜åŸŸã«ã‚ã‚Œã°ãƒšãƒ¼ã‚¸ã‚’å‰²ã‚Šå½“ã¦ã‚‹ */
       regp = &run_task->regions[STACK_REGION];
       if (regp->permission &&
 	  (((UW) regp->start_addr <= addr) &&
@@ -392,7 +392,7 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 #endif
 	result = vmap_reg(run_task->tskid, (VP) addr, PAGE_SIZE, ACC_USER);
 	if (result == E_OK) {
-	  /* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È½èÍı¤ËÀ®¸ù¤·¤¿ */
+	  /* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†ã«æˆåŠŸã—ãŸ */
 	  --on_interrupt;
 	  return;
 	}
@@ -417,16 +417,16 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
       printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
       printk("    eflags = 0x%x\n", eflags);
 #endif
-	/* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È»ş¤Î½èÍı¥Ï¥ó¥É¥é¤¬»ØÄê¤·¤Æ¤¢¤Ã¤¿ */
-	/* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È¥Ï¥ó¥É¥é¤Î°ú¿ô¤Ï°Ê²¼¤Î¤È¤ª¤ê
+	/* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆæ™‚ã®å‡¦ç†ãƒãƒ³ãƒ‰ãƒ©ãŒæŒ‡å®šã—ã¦ã‚ã£ãŸ */
+	/* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆãƒãƒ³ãƒ‰ãƒ©ã®å¼•æ•°ã¯ä»¥ä¸‹ã®ã¨ãŠã‚Š
 
-	 * ¥Ú¡¼¥¸¥Õ¥©¥ë¥È¤¬È¯À¸¤·¤¿¥¢¥É¥ì¥¹
-	 * ¼Â¹Ô¤·¤Æ¤¤¤ë EIP
-	 * ¥Ú¡¼¥¸¥Õ¥©¥ë¥È½èÍı¤Î result code
+	 * ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆãŒç™ºç”Ÿã—ãŸã‚¢ãƒ‰ãƒ¬ã‚¹
+	 * å®Ÿè¡Œã—ã¦ã„ã‚‹ EIP
+	 * ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†ã® result code
 	 */
 	result = (run_task->page_fault_handler) (get_cr2(), eip);
 	if (result == E_OK) {
-	    /* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È½èÍı¤ËÀ®¸ù¤·¤¿ */
+	    /* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†ã«æˆåŠŸã—ãŸ */
 	    --on_interrupt;
 	    slp_tsk();
 	    return;
@@ -486,11 +486,11 @@ void page_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
 /*************************************************************************
  * fault ---
  *
- * °ú¿ô¡§
+ * å¼•æ•°ï¼š
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍı¡§
+ * å‡¦ç†ï¼š
  *
  */
 void fault(UW intn, UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -554,17 +554,17 @@ W wait_int(W * flag)
 }
 
 /*************************************************************************
- * set_idt --- IDT ¤Î¥¨¥ó¥È¥ê¤ò¥»¥Ã¥È¤¹¤ë¡£
+ * set_idt --- IDT ã®ã‚¨ãƒ³ãƒˆãƒªã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  *
- * °ú¿ô¡§	entry
+ * å¼•æ•°ï¼š	entry
  *		selector
  *		offset
  *		type
  *		dpl
  *
- * ÊÖÃÍ¡§	¤Ê¤·
+ * è¿”å€¤ï¼š	ãªã—
  *
- * ½èÍı¡§	IDT ¥Æ¡¼¥Ö¥ë¤Î¥¨¥ó¥È¥ê¤ò¥»¥Ã¥È¤¹¤ë¡£
+ * å‡¦ç†ï¼š	IDT ãƒ†ãƒ¼ãƒ–ãƒ«ã®ã‚¨ãƒ³ãƒˆãƒªã‚’ã‚»ãƒƒãƒˆã™ã‚‹ã€‚
  *
  */
 void set_idt(UW entry, UW selector, UW offset, UW type, UW dpl)
@@ -595,11 +595,11 @@ void set_idt(UW entry, UW selector, UW offset, UW type, UW dpl)
 /*************************************************************************
  * protect_fault --- 
  *
- * °ú¿ô¡§
+ * å¼•æ•°ï¼š
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍı¡§
+ * å‡¦ç†ï¼š
  *
  */
 void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
@@ -628,16 +628,16 @@ void protect_fault(UW edi, UW esi, UW ebp, UW esp, UW ebx, UW edx,
       printk("        cs = 0x%x ds = 0x%x\n", cs, ds);
       printk("    eflags = 0x%x\n", eflags);
 #endif
-	/* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È»ş¤Î½èÍı¥Ï¥ó¥É¥é¤¬»ØÄê¤·¤Æ¤¢¤Ã¤¿ */
-	/* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È¥Ï¥ó¥É¥é¤Î°ú¿ô¤Ï°Ê²¼¤Î¤È¤ª¤ê
+	/* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆæ™‚ã®å‡¦ç†ãƒãƒ³ãƒ‰ãƒ©ãŒæŒ‡å®šã—ã¦ã‚ã£ãŸ */
+	/* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆãƒãƒ³ãƒ‰ãƒ©ã®å¼•æ•°ã¯ä»¥ä¸‹ã®ã¨ãŠã‚Š
 
-	 * ¥Ú¡¼¥¸¥Õ¥©¥ë¥È¤¬È¯À¸¤·¤¿¥¢¥É¥ì¥¹
-	 * ¼Â¹Ô¤·¤Æ¤¤¤ë EIP
-	 * ¥Ú¡¼¥¸¥Õ¥©¥ë¥È½èÍı¤Î result code
+	 * ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆãŒç™ºç”Ÿã—ãŸã‚¢ãƒ‰ãƒ¬ã‚¹
+	 * å®Ÿè¡Œã—ã¦ã„ã‚‹ EIP
+	 * ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†ã® result code
 	 */
 	result = (run_task->page_fault_handler) (get_cr2(), eip);
 	if (result == E_OK) {
-	    /* ¥Ú¡¼¥¸¥Õ¥©¥ë¥È½èÍı¤ËÀ®¸ù¤·¤¿ */
+	    /* ãƒšãƒ¼ã‚¸ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†ã«æˆåŠŸã—ãŸ */
 	    --on_interrupt;
 	    slp_tsk();
 	    return;

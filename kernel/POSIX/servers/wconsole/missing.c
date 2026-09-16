@@ -1,6 +1,6 @@
 /*
 
-  B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+  B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
   GNU GENERAL PUBLIC LICENSE
   Version 2, June 1991
@@ -53,4 +53,32 @@ int atoi(char *s)
     s++;
   }
   return (minus ? -result: result);
+}
+
+void *memcpy(void *dest, const void *src, unsigned int n)
+{
+  char *d = (char *)dest;
+  const char *s = (const char *)src;
+  while (n--) {
+    *d++ = *s++;
+  }
+  return dest;
+}
+
+void *memmove(void *dest, const void *src, unsigned int n)
+{
+  char *d = (char *)dest;
+  const char *s = (const char *)src;
+  if (d < s) {
+    while (n--) {
+      *d++ = *s++;
+    }
+  } else {
+    d += n;
+    s += n;
+    while (n--) {
+      *--d = *--s;
+    }
+  }
+  return dest;
 }

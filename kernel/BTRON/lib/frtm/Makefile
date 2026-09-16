@@ -44,12 +44,12 @@ WOBJS= frtmw.o stack.o interpw.o funcs.o dict.o posixw.o fgraphw.o
 all: libfrtm.a libfrtm-w.a
 
 libfrtm.a: $(OBJS)
-	ar rv libfrtm.a $(OBJS)
-	ranlib libfrtm.a
+	$(AR) rv libfrtm.a $(OBJS)
+	$(RANLIB) libfrtm.a
 
 libfrtm-w.a: $(WOBJS)
-	ar rv libfrtm-w.a $(WOBJS)
-	ranlib libfrtm-w.a
+	$(AR) rv libfrtm-w.a $(WOBJS)
+	$(RANLIB) libfrtm-w.a
 
 frtm: $(OBJS) $(LIBS) $(KERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${ENTRY} -Ttext=$(STARTADDR) $(OBJS) $(IOBJS) $(LIBS) $(KERNLIBS)

@@ -1,57 +1,36 @@
 #
-#	Makefile for boot image.
+#	Makefile for sfsboot image.
+# Updated for modern LLVM/Clang cross-compilation.
+# Accepts HOST_CC, X86_CC, X86_LD, NASM from parent (Rules.mk).
 #
 
 ROOT=../kernel
-ECFLAGS=-Wall -I. -I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/h -I$(ROOT)/ITRON/i386 -I$(ROOT)/POSIX/libc/others -DEOTA $(IDENT)
-STARTADDR=0x00001000
-ENTRY=_main
-KERNLIBS=$(ROOT)/POSIX/libc/libc.a $(ROOT)/ITRON/kernlib/libkernel.a 
 
-NEWLIB=../../libc/newlib-1.8.1-eota/eota/newlib
-NCFLAGS=-Wall -I$(NEWLIB)/targ-include -I$(NEWLIB)/libc/include -DEOTA
-NENTRY=_start
-NLIBS=$(NEWLIB)/crt0.o $(NEWLIB)/libc.a
-NKERNLIBS=$(ROOT)/POSIX/libc/libnative.a
+# Native host compiler for mkmap, mkboot, mkhdboot
+GCC := $(if $(HOST_CC),$(HOST_CC),cc)
 
-%.eo: %.c
-	$(CC) $(ECFLAGS) -c $< -o $@
+# -std=gnu89 keeps K&R implicit-function-declaration behavior
+CFLAGS=-D__LINUX__ -std=gnu89 -Wno-implicit-function-declaration
 
-%.no: %.c
-	$(CC) $(NCFLAGS) -c $< -o $@
-
-AS=/bin/as
-#LD=/bin/ld
-LD=ld
-GCC=gcc
-
-CFLAGS=-D__LINUX__
-
-all: 1stboot 2ndboot mkmap mkboot mkhdboot
+all: 1stboot 2ndboot mkmap mkboot
 
 1stboot:
-	cd 1st ; ${MAKE} 1stboot
+	$(MAKE) -C 1st 1stboot NASM="$(NASM)"
 
 2ndboot:
-	cd 2nd ; ${MAKE} 2ndboot
+	$(MAKE) -C 2nd 2ndboot \
+	    X86_CC="$(X86_CC)" X86_LD="$(X86_LD)" NASM="$(NASM)" HOST_CC="$(GCC)" OBJCOPY="$(OBJCOPY)"
 
 mkmap: mkmap.c
-	$(GCC) -o mkmap mkmap.c
+	$(GCC) $(CFLAGS) -o mkmap mkmap.c
 
 mkboot: mkboot.c
-	$(GCC) -o mkboot mkboot.c
+	$(GCC) $(CFLAGS) -o mkboot mkboot.c
 
 mkhdboot: mkhdboot.c
-	$(GCC) -o mkhdboot mkhdboot.c
+	$(GCC) $(CFLAGS) -o mkhdboot mkhdboot.c
 
-modboot: modboot.c
-	$(GCC) -o modboot modboot.c
-
-modboot-e: modboot.no $(NLIBS) $(NKERNLIBS)
-	$(LD) -Bstatic -o $@ -e ${NENTRY} -Ttext=$(STARTADDR) modboot.no $(NLIBS) $(NKERNLIBS) 
-	strip $@
 clean:
-	(cd 1st; ${MAKE} clean)
-	(cd 2nd; ${MAKE} clean)
+	$(MAKE) -C 1st clean
+	$(MAKE) -C 2nd clean
 	rm -f mkmap mkboot mkhdboot
-

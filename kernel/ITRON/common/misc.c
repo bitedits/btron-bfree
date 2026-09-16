@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,11 +19,11 @@ Version 2, June 1991
 /*************************************************************************
  * halfword_swap
  *
- * °ú¿ô¡§
+ * å¼•æ•°ï¼š
  *
- * ÊÖÃÍ¡§
+ * è¿”å€¤ï¼š
  *
- * ½èÍý¡§
+ * å‡¦ç†ï¼š
  *
  */
 UH halfword_swap(UH w)
@@ -38,8 +38,10 @@ UH halfword_swap(UH w)
  */
 VP bcopy(VP src, VP dest, W count)
 {
+    B *d = (B *)dest;
+    B *s = (B *)src;
     while (count-- > 0) {
-	*((B *) dest)++ = *((B *) src)++;
+	*d++ = *s++;
     }
     return (dest);
 }
@@ -50,8 +52,9 @@ VP bcopy(VP src, VP dest, W count)
  */
 void bzero(VP src, W count)
 {
+    UB *s = (UB *)src;
     while (count-- > 0) {
-	*((UB *) src)++ = 0;
+	*s++ = 0;
     }
 }
 

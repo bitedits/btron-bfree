@@ -4,37 +4,32 @@ STARTADDR=0x00001000
 ENTRY=_main
 KERNLIBS=$(ROOT)/POSIX/libc/libc.a #$(ROOT)/ITRON/kernlib/libitron.a 
 
-NEWLIB=../../../../libc/newlib-1.8.1-eota/eota/newlib
-NCFLAGS=-O -Wall -I$(NEWLIB)/targ-include -I$(NEWLIB)/libc/include -DEOTA
-NENTRY=_start
-NLIBS=$(NEWLIB)/crt0.o $(NEWLIB)/libc.a
-NKERNLIBS=$(ROOT)/POSIX/libc/libnative.a
-
-%.eo: %.c
-	$(CC) $(ECFLAGS) -c $< -o $@
-
-%.no: %.c
-	$(CC) $(NCFLAGS) -c $< -o $@
-
+# Native host compiler — accepts HOST_CC from parent or falls back to cc
+CC := $(if $(HOST_CC),$(HOST_CC),cc)
 CFLAGS=-Wall
 
 all: mksfs statfs sfsck
-eota: mksfs-e statfs-e sfsck-e
-
-user_inst:
-	cp mksfs mksfs.sh  /usr/local/bin/
-	rm -f /usr/local/bin/mkfs.sfs
-	ln mksfs.sh /usr/local/bin/mkfs.sfs
-	cp statfs sfsck /usr/local/bin
 
 mksfs: mkfs.o
-	cc $(CFLAGS) -o mksfs mkfs.o
+	$(CC) $(CFLAGS) -o mksfs mkfs.o
 
 statfs: statfs.o
-	cc $(CFLAGS) -o statfs statfs.o
+	$(CC) $(CFLAGS) -o statfs statfs.o
 
-#statfs: statfs.c
-#	cc -o statfs statfs.c
+sfsck: sfsck.o
+	$(CC) $(CFLAGS) -o sfsck sfsck.o
+
+# Create a bootable HDD SFS image (called by root Makefile 'make pc')
+hd-image: mksfs statfs
+	@echo "==> Creating SFS HDD boot image ..."
+	rm -f hd_boot.bin
+	cp -f ../../../sfsboot/1st/1stboot hd_boot.bin
+	./mksfs hd_boot.bin 20480 512 12
+	./statfs hd_boot.bin mkdir /system
+	./statfs hd_boot.bin write /system/2ndboot ../../../sfsboot/2nd/2ndboot
+	./statfs hd_boot.bin write /system/btron386 ../../../kernel/BTRON/make/btron
+	../../../sfsboot/mkmap hd_boot.bin /system/2ndboot | ../../../sfsboot/mkboot hd_boot.bin
+	@echo "==> hd_boot.bin created."
 
 mksfs-e: mkfs.no $(NLIBS) $(NKERNLIBS)
 	$(LD) -Bstatic -o $@ -e ${NENTRY} -Ttext=$(STARTADDR) mkfs.no $(NLIBS) $(NKERNLIBS) 

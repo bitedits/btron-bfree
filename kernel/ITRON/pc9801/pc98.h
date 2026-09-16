@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -11,7 +11,7 @@ Version 2, June 1991
 /* pc98.h
  *
  * Discription
- *	PC98 ¤Ë°ÍÂ¸¤¹¤ëÉôÊ¬¤ÎÄêµÁ
+ *	PC98 ã«ä¾å­˜ã™ã‚‹éƒ¨åˆ†ã®å®šç¾©
  */
 
 #ifndef __ITRON_PC98_H__
@@ -29,7 +29,9 @@ Version 2, June 1991
 #define INT_HD			41		/* SASI type */
 #define	INT_FD			38		/* 1M type */
 
-#define RESERVE_PAGES		(1024 * 1024 / PAGE_SIZE)
+#define RESERVED_MEMORY		(1024 * 1024)
+#define RESERVED_PAGES		(RESERVED_MEMORY / PAGE_SIZE)
+#define RESERVE_PAGES		RESERVED_PAGES
 #ifdef notdef
 #define RESERVE_PAGES		(128 * 1024 / PAGE_SIZE)
 #endif /* notdef */
@@ -38,6 +40,6 @@ Version 2, June 1991
 #define VRAM_MEM_END		(0xFFFFF)
 
 
-#endif  __ITRON_PC98_H__
+#endif  /* __ITRON_PC98_H__ */
 
 

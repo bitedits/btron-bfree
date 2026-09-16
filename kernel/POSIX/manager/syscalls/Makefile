@@ -121,8 +121,8 @@ all: libsyscall_mgr.a
 
 
 libsyscall_mgr.a: $(OBJS)
-	ar rv libsyscall_mgr.a $(OBJS)
-	ranlib libsyscall_mgr.a
+	$(AR) rv libsyscall_mgr.a $(OBJS)
+	$(RANLIB) libsyscall_mgr.a
 
 
 clean:

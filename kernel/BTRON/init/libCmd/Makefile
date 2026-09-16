@@ -14,8 +14,8 @@ OBJS = command.o graphic.o #posix-misc.o posix-file.o
 all: libCmd.a
 
 libCmd.a: $(OBJS)
-	ar rv libCmd.a $(OBJS)
-	ranlib libCmd.a
+	$(AR) rv libCmd.a $(OBJS)
+	$(RANLIB) libCmd.a
 
 command.o: command.c
 

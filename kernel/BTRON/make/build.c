@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -33,7 +33,7 @@ struct exec {
 #define ZMAGIC 0413
 #endif
 
-#include "../../ITRON/h/itron_module.h"	/* module_info ¹½Â¤ÂÎ¤Î»²¾È¤Î¤¿¤á */
+#include "../../ITRON/h/itron_module.h"	/* module_info æ§‹é€ ä½“ã®å‚ç…§ã®ãŸã‚ */
 
 #define	MAX_LINE	1000
 #define ALIGN(x,al)	((((int)x) + (al) - 1) & ~(al - 1))
@@ -63,11 +63,13 @@ struct config_entry {
 #define EI_NIDENT	16
 
 
-typedef unsigned long ELF32_Addr;
-typedef unsigned short ELF32_Half;
-typedef unsigned long ELF32_Off;
-typedef unsigned long ELF32_Sword;
-typedef unsigned long ELF32_Word;
+#include <stdint.h>
+
+typedef uint32_t ELF32_Addr;
+typedef uint16_t ELF32_Half;
+typedef uint32_t ELF32_Off;
+typedef int32_t  ELF32_Sword;
+typedef uint32_t ELF32_Word;
 
 
 #define PT_NULL		0
@@ -141,8 +143,8 @@ int main(int ac, char **av)
     }
 
 
-    /* pass 0 -   configuration file ¤ÎÆÉ¤ß¹ş¤ß 
-     *            module_table[] ¤òËä¤á¤ë
+    /* pass 0 -   configuration file ã®èª­ã¿è¾¼ã¿ 
+     *            module_table[] ã‚’åŸ‹ã‚ã‚‹
      */
     pass0(av[1]);
     if (nmodule <= 0) {
@@ -151,9 +153,9 @@ int main(int ac, char **av)
     }
 
 
-    /* pass 1 -   module_table[] ¤ò¤â¤È¤Ë¡¢³Æ¥â¥¸¥å¡¼¥ë¤Î
-     *            ¾ğÊó¤òÆÉ¤ß¼è¤ë¡£ÆÉ¤ß¼è¤Ã¤¿¾ğÊó¤ò»È¤Ã¤Æ
-     *            module_table ¤Î mod_info Í×ÁÇ¤òËä¤á¤ë¡£
+    /* pass 1 -   module_table[] ã‚’ã‚‚ã¨ã«ã€å„ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã®
+     *            æƒ…å ±ã‚’èª­ã¿å–ã‚‹ã€‚èª­ã¿å–ã£ãŸæƒ…å ±ã‚’ä½¿ã£ã¦
+     *            module_table ã® mod_info è¦ç´ ã‚’åŸ‹ã‚ã‚‹ã€‚
      */
     pass1(module_table);
 
@@ -169,7 +171,7 @@ int main(int ac, char **av)
 		module_table[i].mod_info.length);
     }
 
-    /* pass 2 -   ºÇ½ªÅª¤Ê OS ¥Õ¥¡¥¤¥ë¤ò½ĞÎÏ¤¹¤ë¡£
+    /* pass 2 -   æœ€çµ‚çš„ãª OS ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‡ºåŠ›ã™ã‚‹ã€‚
      */
     pass2(module_table, av[2]);
 
@@ -177,12 +179,12 @@ int main(int ac, char **av)
     exit(0);
 }
 
-/* pass0 - configuration file ¤ÎÆÉ¤ß¼è¤ê
+/* pass0 - configuration file ã®èª­ã¿å–ã‚Š
  *
- *	   configuration file ¤Î¥Õ¥©¡¼¥Ş¥Ã¥È¤Ï¼¡¤Î¤è¤¦¤Ë¤Ê¤Ã¤Æ¤¤¤ë¡£
- *	   (³Æ¥¨¥ó¥È¥ê¤Ï¶õÇò¤Ş¤¿¤Ï tab ¤Ç¶èÀÚ¤Ã¤Æ¤¤¤ë)
+ *	   configuration file ã®ãƒ•ã‚©ãƒ¼ãƒãƒƒãƒˆã¯æ¬¡ã®ã‚ˆã†ã«ãªã£ã¦ã„ã‚‹ã€‚
+ *	   (å„ã‚¨ãƒ³ãƒˆãƒªã¯ç©ºç™½ã¾ãŸã¯ tab ã§åŒºåˆ‡ã£ã¦ã„ã‚‹)
  *
- *		<¥â¥¸¥å¡¼¥ë¥Õ¥¡¥¤¥ë>	<²¾ÁÛ¥¢¥É¥ì¥¹>	<ÊªÍı¥¢¥É¥ì¥¹>	<¼ïÊÌ>	<¥â¥¸¥å¡¼¥ëÌ¾>
+ *		<ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«>	<ä»®æƒ³ã‚¢ãƒ‰ãƒ¬ã‚¹>	<ç‰©ç†ã‚¢ãƒ‰ãƒ¬ã‚¹>	<ç¨®åˆ¥>	<ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«å>
  *
  */
 pass0(char *config)
@@ -209,11 +211,11 @@ pass0(char *config)
 	    }
 	}
 	if ((*p == '\0') || (*p == '\n')) {
-	    /* ¶õÇò¹Ô¤À¤Ã¤¿ */
+	    /* ç©ºç™½è¡Œã ã£ãŸ */
 	    continue;
 	}
 
-	/* ¥â¥¸¥å¡¼¥ë¥Õ¥¡¥¤¥ëÌ¾¤ÎÆÉ¤ß¼è¤ê */
+	/* ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ãƒ•ã‚¡ã‚¤ãƒ«åã®èª­ã¿å–ã‚Š */
 	path = strtok(line, " \t\n");
 	vaddr = strtok(NULL, " \t\n");
 	paddr = strtok(NULL, " \t\n");
@@ -235,7 +237,7 @@ pass0(char *config)
 	    exit(1);
 	}
 
-	/* module_table ¤òËä¤á¤ë */
+	/* module_table ã‚’åŸ‹ã‚ã‚‹ */
 	module_table[mod_index].fname = strdup(path);
 	sscanf(vaddr, "0x%x", &(module_table[mod_index].mod_info.vaddr));
 	if (vaddr <= 0) {
@@ -281,7 +283,7 @@ pass0(char *config)
 }
 
 
-/* pass1 - ³Æ¥â¥¸¥å¡¼¥ë¤Î¼Â¹Ô¥Õ¥¡¥¤¥ë¤Î¾ğÊó¤ÎÆÉ¤ß¼è¤ê
+/* pass1 - å„ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã®å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã®æƒ…å ±ã®èª­ã¿å–ã‚Š
  */
 int pass1(struct config_entry *info_table)
 {
@@ -292,7 +294,7 @@ int pass1(struct config_entry *info_table)
 
 
     for (i = 0; i < nmodule; i++) {
-	/* ¼Â¹Ô¥Õ¥¡¥¤¥ë¤Î¥ª¡¼¥×¥ó
+	/* å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã®ã‚ªãƒ¼ãƒ—ãƒ³
 	 */
 	fp = fopen(info_table[i].fname, "r");
 	if (fp == NULL) {
@@ -301,13 +303,13 @@ int pass1(struct config_entry *info_table)
 	    exit(1);
 	}
 
-	/* ELF ¥Ø¥Ã¥À¤ÎÆÉ¤ß¼è¤ê */
+	/* ELF ãƒ˜ãƒƒãƒ€ã®èª­ã¿å–ã‚Š */
 	if (fread(&elf, sizeof(elf), 1, fp) <= 0) {
 	    perror("fread");
 	    exit(1);
 	}
 
-	/* ¥×¥í¥°¥é¥à¥Ø¥Ã¥À¤ÎÆÉ¤ß¼è¤ê */
+	/* ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ˜ãƒƒãƒ€ã®èª­ã¿å–ã‚Š */
 	phead = (struct Pheader *) malloc(elf.e_phentsize * elf.e_phnum);
 	if (phead == NULL) {
 	    perror("malloc");
@@ -322,70 +324,38 @@ int pass1(struct config_entry *info_table)
 	    exit(1);
 	}
 
-	/* info_table ¤Î¥¨¥ó¥È¥ê¤òËä¤á¤ë */
+	int nload = 0;
+	struct Pheader load_head[16];
+	for (j = 0; j < elf.e_phnum && nload < 16; j++) {
+	    if (phead[j].p_type == PT_LOAD) {
+		load_head[nload++] = phead[j];
+	    }
+	}
+
+	/* info_table ã®ã‚¨ãƒ³ãƒˆãƒªã‚’åŸ‹ã‚ã‚‹ */
 	info_table[i].mod_info.entry = elf.e_entry;
 
-	/* ¥Õ¥¡¥¤¥ë¾å¤Î¥µ¥¤¥º */
-#ifdef notdef
-	info_table[i].mod_info.length = phead[elf.e_phnum - 1].p_offset
-	    + ALIGN(phead[elf.e_phnum - 1].p_filesz,
-		    phead[elf.e_phnum - 1].p_align) - phead[0].p_offset;
-#else
-	if (elf.e_phnum == 1) {
+	if (nload == 1) {
 	    info_table[i].mod_info.length =
-		ALIGN(phead[0].p_filesz, phead[0].p_align);
-	    info_table[i].mod_info.length =
-		ALIGN(info_table[i].mod_info.length, PAGESIZE);
-	} else {
-	    DPRINTF(
-		    ("vaddr0 %x, offset %d filesz0 %d, vaddr1 %x offset %d filesz1 %d\n",
-		     phead[0].p_vaddr, phead[0].p_offset,
-		     phead[0].p_filesz, phead[1].p_vaddr,
-		     phead[1].p_offset, phead[1].p_filesz));
-	    info_table[i].mod_info.length =
-		phead[elf.e_phnum - 1].p_vaddr - phead[0].p_vaddr +
-		phead[elf.e_phnum - 1].p_filesz;
-	    info_table[i].mod_info.length =
-		ALIGN(info_table[i].mod_info.length, PAGESIZE);
-	}
-#endif
-
-#ifdef notdef
-	info_table[i].mod_info.mem_length = 0;
-	info_table[i].mod_info.mem_length +=
-	    ALIGN(phead[0].p_memsz, phead[0].p_align);
-	for (j = 1; j < elf.e_phnum; j++) {
-	    info_table[i].mod_info.mem_length +=
-		(phead[j].p_vaddr -
-		 (phead[j - 1].p_vaddr +
-		  ALIGN(phead[j - 1].p_memsz, phead[j - 1].p_align)));
-	    DPRINTF(
-		    ("gap: %d\n",
-		     (phead[j].p_vaddr -
-		      (phead[j - 1].p_vaddr +
-		       ALIGN(phead[j - 1].p_memsz,
-			     phead[j - 1].p_align)))));
-	    info_table[i].mod_info.mem_length +=
-		ALIGN(phead[j].p_memsz, phead[0].p_align);
-	}
-	info_table[i].mod_info.mem_length =
-	    ALIGN(info_table[i].mod_info.mem_length, PAGESIZE);
-#else
-	if (elf.e_phnum == 1) {
-	    info_table[i].mod_info.mem_length
-		= ALIGN(phead[0].p_memsz, phead[0].p_align);
-	    info_table[i].mod_info.mem_length
-		= ALIGN(info_table[i].mod_info.mem_length, PAGESIZE);
-	} else {
+		ALIGN(load_head[0].p_filesz, PAGESIZE);
 	    info_table[i].mod_info.mem_length =
-		phead[elf.e_phnum - 1].p_vaddr - phead[0].p_vaddr +
-		phead[elf.e_phnum - 1].p_memsz;
+		ALIGN(load_head[0].p_memsz, PAGESIZE);
+	} else if (nload == 2) {
+	    info_table[i].mod_info.length =
+		load_head[1].p_vaddr - load_head[0].p_vaddr + load_head[1].p_filesz;
+	    info_table[i].mod_info.length =
+		ALIGN(info_table[i].mod_info.length, PAGESIZE);
+	    info_table[i].mod_info.mem_length =
+		load_head[1].p_vaddr - load_head[0].p_vaddr + load_head[1].p_memsz;
 	    info_table[i].mod_info.mem_length =
 		ALIGN(info_table[i].mod_info.mem_length, PAGESIZE);
+	} else {
+	    fprintf(stderr, "Unsupported number of PT_LOAD segments: %d in %s\n",
+		    nload, info_table[i].fname);
+	    exit(1);
 	}
-#endif
 
-	info_table[i].offset = phead[0].p_offset;
+	info_table[i].offset = load_head[0].p_offset;
 
 	free(phead);
 	fclose(fp);
@@ -395,13 +365,13 @@ int pass1(struct config_entry *info_table)
 
 
 
-/* pass2 - OS ¥Õ¥¡¥¤¥ë¤Î½ĞÎÏ
+/* pass2 - OS ãƒ•ã‚¡ã‚¤ãƒ«ã®å‡ºåŠ›
  */
 int pass2(struct config_entry *info_table, char *outputfile)
 {
     int i;
     FILE *fp, *outfp;
-    struct exec einfo;		/* a.out ·Á¼°¤Î¼Â¹Ô¥Õ¥¡¥¤¥ë¤Î¥Ø¥Ã¥À */
+    struct exec einfo;		/* a.out å½¢å¼ã®å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ˜ãƒƒãƒ€ */
     char *buf;
     struct ELFheader elf;
     struct Pheader *phead;
@@ -419,7 +389,7 @@ int pass2(struct config_entry *info_table, char *outputfile)
     boot.count = nmodule;
     boot.machine.rootfs = 0xffffffff;
 
-    /* ¥Ø¥Ã¥À¤Î½ĞÎÏ */
+    /* ãƒ˜ãƒƒãƒ€ã®å‡ºåŠ› */
     if (fwrite(&boot, sizeof(boot), 1, outfp) < 1) {
 	perror("fwrite");
 	fclose(outfp);
@@ -437,7 +407,7 @@ int pass2(struct config_entry *info_table, char *outputfile)
     fseek(outfp, 1024, SEEK_SET);
 
     einfo.a_info = ZMAGIC;
-    /* ¥â¥¸¥å¡¼¥ë¤Ò¤È¤Ä¤Ò¤È¤Ä¤Î½ĞÎÏ */
+    /* ãƒ¢ã‚¸ãƒ¥ãƒ¼ãƒ«ã²ã¨ã¤ã²ã¨ã¤ã®å‡ºåŠ› */
     for (i = 0; i < nmodule; i++) {
 	buf = (char *) malloc(info_table[i].mod_info.length);
 	if (buf == NULL) {
@@ -446,7 +416,7 @@ int pass2(struct config_entry *info_table, char *outputfile)
 	    exit(1);
 	}
 
-	/* ¼Â¹Ô¥Õ¥¡¥¤¥ë¤Î¥Ø¥Ã¥À¤ò½ĞÎÏ (a.out ·Á¼°)
+	/* å®Ÿè¡Œãƒ•ã‚¡ã‚¤ãƒ«ã®ãƒ˜ãƒƒãƒ€ã‚’å‡ºåŠ› (a.out å½¢å¼)
 	 */
 	einfo.a_text = info_table[i].mod_info.length;
 	einfo.a_data = 0;
@@ -494,13 +464,13 @@ output_module(struct config_entry *info, FILE * in, FILE * out)
 	exit(1);
     }
 
-    /* ELF ¥Ø¥Ã¥À¤ÎÆÉ¤ß¼è¤ê */
+    /* ELF ãƒ˜ãƒƒãƒ€ã®èª­ã¿å–ã‚Š */
     if (fread(&elf, sizeof(elf), 1, in) <= 0) {
 	perror("fread");
 	exit(1);
     }
 
-    /* ¥×¥í¥°¥é¥à¥Ø¥Ã¥À¤ÎÆÉ¤ß¼è¤ê */
+    /* ãƒ—ãƒ­ã‚°ãƒ©ãƒ ãƒ˜ãƒƒãƒ€ã®èª­ã¿å–ã‚Š */
     phead = (struct Pheader *) malloc(elf.e_phentsize * elf.e_phnum);
     if (phead == NULL) {
 	perror("malloc");
@@ -515,86 +485,85 @@ output_module(struct config_entry *info, FILE * in, FILE * out)
 	exit(1);
     }
 
-    /* Text ¥¨¥ê¥¢¤ÎÆÉ¤ß¼è¤ê
-     */
-    if (fseek(in, phead[0].p_offset, SEEK_SET) < 0) {
-	perror("fseek");
-	exit(1);
+    int nload = 0;
+    struct Pheader load_head[16];
+    for (i = 0; i < elf.e_phnum && nload < 16; i++) {
+	if (phead[i].p_type == PT_LOAD) {
+	    load_head[nload++] = phead[i];
+	}
     }
-    buf = (char *) malloc(phead[0].p_filesz);
-    if (buf == NULL) {
-	perror("malloc");
-	fclose(in);
-	fclose(out);
-	exit(1);
-    }
-    if (fread(buf, phead[0].p_filesz, 1, in) < 1) {
-	perror("fread");
-	fclose(in);
-	fclose(out);
-	exit(1);
-    }
-    if (fwrite(buf, phead[0].p_filesz, 1, out) < 1) {
-	perror("fwrite");
-	fclose(in);
-	fclose(out);
-	exit(1);
-    }
-    DPRINTF(("filesize: %d\n", info[0].mod_info.length));
-    DPRINTF(("fwrite(TEXT): %d\n", phead[0].p_filesz));
-    free(buf);
-    output_length = phead[0].p_filesz;
 
-
-    /* Data ¥¨¥ê¥¢¤ÎÆÉ¤ß¼è¤ê
-     */
-    if (elf.e_phnum == 2) {
-	/* padding ¤Î½ĞÎÏ */
-	padding =
-	    phead[1].p_vaddr - (phead[0].p_vaddr + phead[0].p_filesz);
-	output_padding(out, padding);
-	output_length += padding;
-
-	DPRINTF(("Data area: 0x%x - 0x%x (size 0x%x (%d))\n",
-		 output_length,
-		 output_length + phead[1].p_filesz,
-		 phead[1].p_filesz, phead[1].p_filesz));
-
-	if (fseek(in, phead[1].p_offset, SEEK_SET) < 0) {
+    if (nload == 1) {
+	if (fseek(in, load_head[0].p_offset, SEEK_SET) < 0) {
 	    perror("fseek");
 	    exit(1);
 	}
-	buf = (char *) malloc(phead[1].p_filesz);
+	buf = (char *) malloc(load_head[0].p_filesz);
 	if (buf == NULL) {
 	    perror("malloc");
-	    fclose(in);
-	    fclose(out);
-	    exit(1);
+	    fclose(in); fclose(out); exit(1);
 	}
-	if (fread(buf, phead[1].p_filesz, 1, in) < 1) {
-	    perror("fread: (2)");
-	    fclose(in);
-	    fclose(out);
-	    exit(1);
+	if (fread(buf, load_head[0].p_filesz, 1, in) < 1) {
+	    perror("fread");
+	    fclose(in); fclose(out); exit(1);
 	}
-	DPRINTF(("fwrite(DATA): %d\n", phead[1].p_filesz));
-	if (fwrite(buf, phead[1].p_filesz, 1, out) < 1) {
+	if (fwrite(buf, load_head[0].p_filesz, 1, out) < 1) {
 	    perror("fwrite");
-	    fclose(in);
-	    fclose(out);
-	    exit(1);
+	    fclose(in); fclose(out); exit(1);
 	}
 	free(buf);
-	output_length += phead[1].p_filesz;
-	output_padding(out,
-		       ALIGN(output_length, PAGESIZE) - output_length);
-    } else if (elf.e_phnum == 1) {
-	DPRINTF(("only TEXT\n"));
-	padding =
-	    ALIGN(phead[0].p_filesz, phead[0].p_align) - phead[0].p_filesz;
+	padding = info->mod_info.length - load_head[0].p_filesz;
+	if (padding > 0)
+	    output_padding(out, padding);
+    } else if (nload == 2) {
+	if (fseek(in, load_head[0].p_offset, SEEK_SET) < 0) {
+	    perror("fseek");
+	    exit(1);
+	}
+	buf = (char *) malloc(load_head[0].p_filesz);
+	if (buf == NULL) {
+	    perror("malloc");
+	    fclose(in); fclose(out); exit(1);
+	}
+	if (fread(buf, load_head[0].p_filesz, 1, in) < 1) {
+	    perror("fread");
+	    fclose(in); fclose(out); exit(1);
+	}
+	if (fwrite(buf, load_head[0].p_filesz, 1, out) < 1) {
+	    perror("fwrite");
+	    fclose(in); fclose(out); exit(1);
+	}
+	free(buf);
+	output_length = load_head[0].p_filesz;
+
+	padding = load_head[1].p_vaddr - (load_head[0].p_vaddr + load_head[0].p_filesz);
 	output_padding(out, padding);
+	output_length += padding;
+
+	if (fseek(in, load_head[1].p_offset, SEEK_SET) < 0) {
+	    perror("fseek");
+	    exit(1);
+	}
+	buf = (char *) malloc(load_head[1].p_filesz);
+	if (buf == NULL) {
+	    perror("malloc");
+	    fclose(in); fclose(out); exit(1);
+	}
+	if (fread(buf, load_head[1].p_filesz, 1, in) < 1) {
+	    perror("fread: (2)");
+	    fclose(in); fclose(out); exit(1);
+	}
+	if (fwrite(buf, load_head[1].p_filesz, 1, out) < 1) {
+	    perror("fwrite");
+	    fclose(in); fclose(out); exit(1);
+	}
+	free(buf);
+	output_length += load_head[1].p_filesz;
+	padding = info->mod_info.length - output_length;
+	if (padding > 0)
+	    output_padding(out, padding);
     } else {
-	fprintf(stderr, "Too many program header.\n");
+	fprintf(stderr, "Too many program header: %d PT_LOAD segments\n", nload);
 	exit(1);
     }
 }

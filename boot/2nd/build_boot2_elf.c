@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -19,7 +19,9 @@ Version 2, June 1991
 
 #include <sys/stat.h>
 #include <unistd.h>
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
 #include <malloc.h>
+#endif
 
 
 
@@ -102,10 +104,10 @@ extern void		pad_write (int outfd, int size);
 /****************************************************************************
  *	main ---
  *
- *	°ú¿ô	ac
- *		av[0] .... ¥³¥Ş¥ó¥ÉÌ¾
- *		av[1] .... 16 ¥Ó¥Ã¥ÈÆ°ºîÉô
- *		av[2] .... 32 ¥Ó¥Ã¥ÈÆ°ºîÉô
+ *	å¼•æ•°	ac
+ *		av[0] .... ã‚³ãƒãƒ³ãƒ‰å
+ *		av[1] .... 16 ãƒ“ãƒƒãƒˆå‹•ä½œéƒ¨
+ *		av[2] .... 32 ãƒ“ãƒƒãƒˆå‹•ä½œéƒ¨
  */
 int
 main (int ac, char **av)
@@ -143,7 +145,7 @@ main (int ac, char **av)
       pad_write (1, ALIGN_SIZE - (size % ALIGN_SIZE));
     }
 
-  /* Text ÎÎ°è¤ÎÆÉ¤ß¼è¤ê */
+  /* Text é ˜åŸŸã®èª­ã¿å–ã‚Š */
   buf = read_elf_efile (av[2], &text_size, PT_LOAD, PF_R | PF_X, &text_vaddr);
   if (buf == NULL)
     {
@@ -161,7 +163,7 @@ main (int ac, char **av)
   free (buf);
 
 	     
-  /* Data ÎÎ°è¤ÎÆÉ¤ß¼è¤ê */
+  /* Data é ˜åŸŸã®èª­ã¿å–ã‚Š */
   buf = read_elf_efile (av[2], &data_size, PT_LOAD, PF_R | PF_W, &data_vaddr);
   if (buf == NULL)
     {
@@ -229,7 +231,7 @@ read_minix_efile (char *fname, int *size)
 }
 
 /*
- * ELF ¥Õ¥¡¥¤¥ë¤òÆÉ¤ß¹ş¤à¡£
+ * ELF ãƒ•ã‚¡ã‚¤ãƒ«ã‚’èª­ã¿è¾¼ã‚€ã€‚
  */
 void *
 read_elf_efile (char *fname, int *size, ELF32_Word type, ELF32_Word flag, ELF32_Addr *vaddr)
@@ -281,7 +283,7 @@ read_elf_efile (char *fname, int *size, ELF32_Word type, ELF32_Word flag, ELF32_
 
   if (i >= ent)
     {
-      /* ¾ò·ï¤Ë¹çÃ×¤·¤¿ program header ¤¬¸«¤Ä¤«¤é¤Ê¤«¤Ã¤¿ */
+      /* æ¡ä»¶ã«åˆè‡´ã—ãŸ program header ãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸ */
       free (ph);
       free (elfhp);
       fprintf (stderr, "Not found program header\n");

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,8 +12,7 @@ Version 2, June 1991
 /* $Id: atoi.c,v 1.1.1.1 2003/02/05 03:56:56 monaka Exp $ */
 static char rcsid[] = "$Id: atoi.c,v 1.1.1.1 2003/02/05 03:56:56 monaka Exp $";
 
-#include <types.h>
-#include <string.h>
+#include "../init.h"
 
 int
 atoi (char *s)

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -40,7 +40,7 @@ sys_vsys_inf (VP argp)
     case ROOTFS_INFO:
       rootfs = (W *)args->buf;
       info = (struct boot_header *)MODULE_TABLE;
-      (UW)info |= 0x80000000;
+      info = (struct boot_header *)((UW)info | 0x80000000);
       *rootfs = info->machine.rootfs;
       printk ("vsys_inf: rootfs_info: rootfs = 0x%x\n", info->machine.rootfs);	/* */
       return (E_OK);

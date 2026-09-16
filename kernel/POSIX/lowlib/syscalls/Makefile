@@ -123,8 +123,8 @@ all: libsyscall.a
 
 
 libsyscall.a: $(OBJS)
-	ar rv libsyscall.a $(OBJS)
-	ranlib libsyscall.a
+	$(AR) rv libsyscall.a $(OBJS)
+	$(RANLIB) libsyscall.a
 
 
 clean:

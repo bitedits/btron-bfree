@@ -22,8 +22,8 @@ SRCS=sfs_fs.c sfs_block.c sfs_file.c sfs_dir.c sfs_inode.c sfs_device.c \
 all: libsfs.a
 
 libsfs.a: $(OBJS)
-	ar rv libsfs.a $(OBJS)
-	ranlib libsfs.a
+	$(AR) rv libsfs.a $(OBJS)
+	$(RANLIB) libsfs.a
 
 clean:
 	rm -f $(OBJS) libsfs.a

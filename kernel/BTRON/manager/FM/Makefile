@@ -36,6 +36,6 @@ OBJS=dummy.o
 all: libfm.a
 
 libfm.a: $(OBJS)
-	ar rv $@ $<
+	$(AR) rv $@ $<
 
 	

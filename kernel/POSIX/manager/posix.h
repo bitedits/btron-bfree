@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001-2002, Tomohide Naniwa
 
 */
-/* posix.h - POSIX ´Ä¶­¥Ş¥Í¡¼¥¸¥ãÍÑ¤Î¥Ø¥Ã¥À¥Õ¥¡¥¤¥ë
+/* posix.h - POSIX ç’°å¢ƒãƒãƒãƒ¼ã‚¸ãƒ£ç”¨ã®ãƒ˜ãƒƒãƒ€ãƒ•ã‚¡ã‚¤ãƒ«
  *
  *
  *
@@ -33,12 +33,12 @@ Version 2, June 1991
 #endif
 
 
-/* =========================== ¥Ş¥¯¥íÄêµÁ =========================== */
+/* =========================== ãƒã‚¯ãƒ­å®šç¾© =========================== */
 
 #define POSIX_MANAGER	"manager.posix"
 
 
-/* ³Æ¼ïÀ©¸ÂÃÍ */
+/* å„ç¨®åˆ¶é™å€¤ */
 #define MAX_BODY_SIZE	1024
 #define MAX_LINE_LENGTH	512
 #define MAXFS		1
@@ -53,8 +53,8 @@ Version 2, June 1991
 
 #define POSIX_TASK_LEVEL	USER_LEVEL
 
-/* POSIX ´Ä¶­¥Ş¥Í¡¼¥¸¥ã¤¬Í×µá¸µ¤ËÊÖ¤¹¥¨¥é¡¼ÈÖ¹æ */
-#define EP_OK			(0)	/* À®¸ù         */
+/* POSIX ç’°å¢ƒãƒãƒãƒ¼ã‚¸ãƒ£ãŒè¦æ±‚å…ƒã«è¿”ã™ã‚¨ãƒ©ãƒ¼ç•ªå· */
+#define EP_OK			(0)	/* æˆåŠŸ         */
 #define EP_2BIG			(-1)	/* Arg list too long */
 #define EP_ACCESS		(-2)	/* Permission denied */
 #define EP_AGAIN		(-3)	/* Resouce temporarily unavailable */
@@ -100,8 +100,8 @@ Version 2, June 1991
 #define FAIL		0
 
 /* macros for waitpid */
-#define WNOHANG		1	/* »Ò¥×¥í¥»¥¹¤Î½ªÎ»¤òÂÔ¤¿¤Ê¤¤ */
-#define WUNTRACED	2	/* ¥¸¥ç¥ÖÀ©¸æÍÑ:Ì¤¼ÂÁõ */
+#define WNOHANG		1	/* å­ãƒ—ãƒ­ã‚»ã‚¹ã®çµ‚äº†ã‚’å¾…ãŸãªã„ */
+#define WUNTRACED	2	/* ã‚¸ãƒ§ãƒ–åˆ¶å¾¡ç”¨:æœªå®Ÿè£… */
 
 
 /* dirent */
@@ -139,8 +139,8 @@ struct utimbuf {
 
 #include "assert.h"
 #include "sfs/sfs_fs.h"
-#include "posix_fs.h"
 #include "posix_proc.h"
+#include "posix_fs.h"
 #include "posix_mm.h"
 #include "utsname.h"
 #include "elf.h"
@@ -151,7 +151,7 @@ struct utimbuf {
 
 
 
-/* ===========================  ´Ø¿ôÄêµÁ  =========================== */
+/* ===========================  é–¢æ•°å®šç¾©  =========================== */
 
 /* posix.c */
 extern void posix_start(void);
@@ -172,7 +172,7 @@ extern W printk(B * fmt, ...);
 
 
 /* global.c */
-struct utsname system_name;
+extern struct utsname system_name;
 
 extern UW get_system_time(UW *usec);
 #endif				/* KERNEL */

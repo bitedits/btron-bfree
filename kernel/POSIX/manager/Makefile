@@ -1,5 +1,5 @@
 #
-# B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Þ¤¹¡£
+# B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 # 
 # GNU GENERAL PUBLIC LICENSE
 # Version 2, June 1991
@@ -8,12 +8,12 @@
 # (C) 2001, Tomohide Naniwa
 #
 
-# ¥Ç¥Ð¥Ã¥°ÍÑ Define
+# ãƒ‡ãƒãƒƒã‚°ç”¨ Define
 #
-# VMDEBUG	²¾ÁÛµ­²±´ØÏ¢
-# MMDEBUG	¥á¥â¥ê´ÉÍý´ØÏ¢
-# PMDEBUG	¥×¥í¥»¥¹´ÉÍý´ØÏ¢
-# FMDEBUG	¥Õ¥¡¥¤¥ë´ÉÍý´ØÏ¢
+# VMDEBUG	ä»®æƒ³è¨˜æ†¶é–¢é€£
+# MMDEBUG	ãƒ¡ãƒ¢ãƒªç®¡ç†é–¢é€£
+# PMDEBUG	ãƒ—ãƒ­ã‚»ã‚¹ç®¡ç†é–¢é€£
+# FMDEBUG	ãƒ•ã‚¡ã‚¤ãƒ«ç®¡ç†é–¢é€£
 #
 #DEBUG=-DFMDEBUG -DEXEC_DEBUG -DDEBUG -DFKDEBUG
 DEBUG=#-DEXEC_DEBUG
@@ -23,11 +23,11 @@ INC=-I$(ROOT) -I$(ROOT)/ITRON -I$(ROOT)/ITRON/servers -I$(ROOT)/ITRON/h
 CFLAGS=-O2 -fno-builtin -Wall $(INC) $(IDENT)
 CC=gcc
 
-ENTRY=startup
+ENTRY=posix_start
 STARTADDR=0x00001000
 
 
-OBJS=s0.o posix.o version.o request.o filesystem.o memory.o process.o \
+OBJS=posix.o version.o request.o filesystem.o memory.o process.o \
 	log.o syscall.o global.o vmtree.o exec.o fork.o
 SRCS=posix.c version.c request.c filesystem.c memory.c process.c \
 	log.c syscall.c global.c vmtree.c exec.c fork.c
@@ -36,13 +36,13 @@ KERNLIB=../../ITRON/kernlib/libkernel.a
 LIBS=sfs/libsfs.a syscalls/libsyscall_mgr.a $(KERNLIB)
 
 all:
-	(cd sfs; ${MAKE})
-	(cd syscalls; ${MAKE})
+	(cd sfs; ${MAKE} CC="$(CC)" LD="$(LD)" AR="$(AR)" RANLIB="$(RANLIB)")
+	(cd syscalls; ${MAKE} CC="$(CC)" LD="$(LD)" AR="$(AR)" RANLIB="$(RANLIB)")
 	${MAKE} posix_manager
 
 posix_manager:	$(OBJS) $(LIBS)
 	$(LD) -static -o $@ -e $(ENTRY) -Ttext=$(STARTADDR) $(OBJS) $(LIBS)
-	size $@
+	-size $@ 2>/dev/null || true
 
 clean:
 	rm -f $(OBJS) posix_manager

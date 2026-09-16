@@ -36,7 +36,7 @@ OBJS=dummy.o
 all: libpm.a
 
 libpm.a: $(OBJS)
-	ar rv $@ $<
+	$(AR) rv $@ $<
 
 
 	

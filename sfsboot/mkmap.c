@@ -16,7 +16,9 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#if !defined(__APPLE__) && !defined(__FreeBSD__)
 #include <malloc.h>
+#endif
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>

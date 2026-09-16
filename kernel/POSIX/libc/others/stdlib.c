@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -44,13 +44,13 @@ static char rcsid[] = "$Id: stdlib.c,v 1.1.1.1 2003/02/05 03:57:15 monaka Exp $"
  * Mitten from C.
  *
  * Revision 1.3  1997/07/06 11:50:02  night
- * ¥Ç¥Ğ¥Ã¥°Ê¸¤Î°ú¿ô»ØÄê¤¬¤Ş¤Á¤¬¤Ã¤Æ¤¤¤¿¤Î¤Ç¡¢½¤Àµ¤·¤¿¡£
+ * ãƒ‡ãƒãƒƒã‚°æ–‡ã®å¼•æ•°æŒ‡å®šãŒã¾ã¡ãŒã£ã¦ã„ãŸã®ã§ã€ä¿®æ­£ã—ãŸã€‚
  *
  * Revision 1.2  1997/04/24 15:38:06  night
- * printf() ´Ø¿ô¤Î½èÍı¤ò kernlib ¤Î dbg_printf() ¤ÈÆ±ÍÍ¤Î¤â¤Î¤Ë¤·¤¿¡£
+ * printf() é–¢æ•°ã®å‡¦ç†ã‚’ kernlib ã® dbg_printf() ã¨åŒæ§˜ã®ã‚‚ã®ã«ã—ãŸã€‚
  *
  * Revision 1.1  1996/07/25  16:03:44  night
- * IBM PC ÈÇ¤Ø¤ÎºÇ½é¤ÎÅĞÏ¿
+ * IBM PC ç‰ˆã¸ã®æœ€åˆã®ç™»éŒ²
  *
  *
  */
@@ -76,7 +76,7 @@ print_digit (FILE *port, UW d, UW base)
     }
 }
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
+#define INC(p,x)	(p = (void *)(((char *)(p)) + sizeof (x *)))
 
 /*
  *
@@ -126,7 +126,7 @@ vfprintf (FILE *port, B *fmt, VP arg0)
 	    case 'd':
 	      if ((W)*ap < 0)
 		{
-		  ((W)*ap) = 0 - ((W)*ap);
+		  *ap = (VP)(0 - (W)*ap);
 		  putc ('-', port);
 		}
 	      print_digit (port, (W)*ap, 10);
@@ -211,8 +211,8 @@ W
 writechar (ID port, UB *buf, W length)
 {
 #ifdef notdef
-  DDEV_REQ		req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-  DDEV_RES		res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+  DDEV_REQ		req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+  DDEV_RES		res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
   W			rsize;
   ER			error;
   W			i;
@@ -291,8 +291,8 @@ W
 readchar (ID port)
 {
 #ifdef notdef
-  DDEV_REQ		req;		/* Í×µá¥Ñ¥±¥Ã¥È */
-  DDEV_RES		res;		/* ÊÖÅú¥Ñ¥±¥Ã¥È */
+  DDEV_REQ		req;		/* è¦æ±‚ãƒ‘ã‚±ãƒƒãƒˆ */
+  DDEV_RES		res;		/* è¿”ç­”ãƒ‘ã‚±ãƒƒãƒˆ */
   W			rsize;
   ER			error;
   W			i;

@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2001, Tomohide Naniwa
 
 */
-/* printk.c --- printk ╢ь╥╦╓н╢ь©Т
+/* printk.c --- printk И√╒Д©┌Ц│╝И√╒Ф∙╟
  *
  */
 
@@ -18,7 +18,7 @@ Version 2, June 1991
 #include "func.h"
 
 
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
+#define INC(p,x)	(p = (VP)(((char *)(p)) + sizeof (x *)))
 
 
 static void print_string(B *);
@@ -55,7 +55,7 @@ W vprintk(B * fmt, VP arg0)
 
 	    case 'd':
 		if ((W) * ap < 0) {
-		    ((W) * ap) = -((W) * ap);
+		    *ap = (VP)(-(W)*ap);
 		    putchar('-');
 		}
 		print_digit((W) * ap, 10);

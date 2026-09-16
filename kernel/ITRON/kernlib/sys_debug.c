@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ╓ню╦ю╝й╙╓о GNU Generic PUBLIC LICENSE ╓к╫╬╓╓╓ч╓╧║ё
+B-Free Project Ц│╝Г■÷Ф┬░Г┴╘Ц│╞ GNU Generic PUBLIC LICENSE Ц│╚Е╬⌠Ц│└Ц│╬Ц│≥Ц─┌
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -10,7 +10,7 @@ Version 2, June 1991
 (C) 2002, Tomohide Naniwa
 
 */
-/* ╔г╔п╔ц╔╟мя╓н╔╥╔╧╔ф╔Ю╔Ё║╪╔К
+/* Ц┐┤Ц┐░Ц┐┐Ц┌╟Г■╗Ц│╝Ц┌╥Ц┌╧Ц┐├Ц┐═Ц┌ЁЦ┐╪Ц┐╚
  *
  */
 
@@ -55,11 +55,7 @@ static void print_string(B * string)
     dbg_puts(string);
 }
 
-#ifdef notdef
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x *)))
-#endif
-
-#define INC(p,x)	(((W)p) = (((W)p) + sizeof (x)))
+#define INC(p,x)	(p = (VP)(((char *)(p)) + sizeof (x)))
 
 /*
  *
@@ -87,7 +83,7 @@ static ER dbg_vprintf(B * fmt, VP arg0)
 
 	    case 'd':
 		if ((W) * ap < 0) {
-		    ((W) * ap) = -((W) * ap);
+		    *ap = (VP)(-(W)*ap);
 		    dbg_putchar('-');
 		}
 		print_digit((W) * ap, 10);

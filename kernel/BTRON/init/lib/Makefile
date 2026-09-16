@@ -30,8 +30,8 @@ OBJS= string.o stdlib.o atoi.o
 all: libs.a
 
 libs.a: $(OBJS)
-	ar rv libs.a $(OBJS)
-	ranlib libs.a
+	$(AR) rv libs.a $(OBJS)
+	$(RANLIB) libs.a
 
 
 tags:

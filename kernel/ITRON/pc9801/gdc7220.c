@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ¤ÎÀ¸À®Êª¤Ï GNU Generic PUBLIC LICENSE ¤Ë½¾¤¤¤Ş¤¹¡£
+B-Free Project ã®ç”Ÿæˆç‰©ã¯ GNU Generic PUBLIC LICENSE ã«å¾“ã„ã¾ã™ã€‚
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -8,7 +8,7 @@ Version 2, June 1991
 (C) B-Free Project.
 
 */
-/* gdc7220.c --- ¥°¥é¥Õ¥£¥Ã¥¯¥Ç¥£¥¹¥×¥ì¥¤¥³¥ó¥È¥í¡¼¥é PD7220 ¤Î¥É¥é¥¤¥Ğ
+/* gdc7220.c --- ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ãƒ‡ã‚£ã‚¹ãƒ—ãƒ¬ã‚¤ã‚³ãƒ³ãƒˆãƒ­ãƒ¼ãƒ© PD7220 ã®ãƒ‰ãƒ©ã‚¤ãƒ
  *
  *
  * 
@@ -21,7 +21,7 @@ Version 2, June 1991
 #include "misc.h"
 #include "func.h"
 #include "interrupt.h"
-#include "../h/graphics.h"
+#include "../h/pc9801/graphics.h"
 #include "../io/io.h"
 
 #define PLANE0		0x800A8000
@@ -31,76 +31,76 @@ Version 2, June 1991
 
 
 
-/* ¤³¤Î¥Õ¥¡¥¤¥ë¤Ç»ÈÍÑ¤¹¤ë¥Ş¥¯¥í */
+/* ã“ã®ãƒ•ã‚¡ã‚¤ãƒ«ã§ä½¿ç”¨ã™ã‚‹ãƒã‚¯ãƒ­ */
 #define CHK_ERR		if (err) return (err);
 
 
 
-/* GDC ¤Ë´Ø·¸¤·¤Æ¤¤¤ëIO¥İ¡¼¥È¤ÎÄêµÁ */
-#define GDC_COMMAND	0xa2		/* ¥é¥¤¥È¥³¥Ş¥ó¥É	*/
-#define GDC_OUT		0xa0		/* ¥é¥¤¥È¥Ñ¥é¥á¡¼¥¿	*/
-#define GDC_IN		0xa2		/* ¥ê¡¼¥É¥Ç¡¼¥¿		*/
-#define GDC_STATUS	0xa0		/* ¥ê¡¼¥É¥¹¥Æ¡¼¥¿¥¹	*/
-#define GDC_DISLAY_SEL	0xa4		/* É½¼¨²èÌÌÁªÂò		*/
-#define GDC_DRAW_SEL	0xa6		/* ÉÁ²è²èÌÌÁªÂò		*/
-#define GDC_PAL_D	0xa8		/* ¥é¥¤¥È¥Ñ¥ì¥Ã¥È¥ì¥¸¥¹¥¿ D */
-#define GDC_PAL_C	0xaa		/* ¥é¥¤¥È¥Ñ¥ì¥Ã¥È¥ì¥¸¥¹¥¿ C */
-#define GDC_PAL_B	0xac		/* ¥é¥¤¥È¥Ñ¥ì¥Ã¥È¥ì¥¸¥¹¥¿ B */
-#define GDC_PAL_A	0xae		/* ¥é¥¤¥È¥Ñ¥ì¥Ã¥È¥ì¥¸¥¹¥¿ A */
+/* GDC ã«é–¢ä¿‚ã—ã¦ã„ã‚‹IOãƒãƒ¼ãƒˆã®å®šç¾© */
+#define GDC_COMMAND	0xa2		/* ãƒ©ã‚¤ãƒˆã‚³ãƒãƒ³ãƒ‰	*/
+#define GDC_OUT		0xa0		/* ãƒ©ã‚¤ãƒˆãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿	*/
+#define GDC_IN		0xa2		/* ãƒªãƒ¼ãƒ‰ãƒ‡ãƒ¼ã‚¿		*/
+#define GDC_STATUS	0xa0		/* ãƒªãƒ¼ãƒ‰ã‚¹ãƒ†ãƒ¼ã‚¿ã‚¹	*/
+#define GDC_DISLAY_SEL	0xa4		/* è¡¨ç¤ºç”»é¢é¸æŠ		*/
+#define GDC_DRAW_SEL	0xa6		/* æç”»ç”»é¢é¸æŠ		*/
+#define GDC_PAL_D	0xa8		/* ãƒ©ã‚¤ãƒˆãƒ‘ãƒ¬ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ D */
+#define GDC_PAL_C	0xaa		/* ãƒ©ã‚¤ãƒˆãƒ‘ãƒ¬ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ C */
+#define GDC_PAL_B	0xac		/* ãƒ©ã‚¤ãƒˆãƒ‘ãƒ¬ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ B */
+#define GDC_PAL_A	0xae		/* ãƒ©ã‚¤ãƒˆãƒ‘ãƒ¬ãƒƒãƒˆãƒ¬ã‚¸ã‚¹ã‚¿ A */
 
-/* GDC ¥³¥Ş¥ó¥É */
-#define GDC_RESET	0x0000		/* ¥ê¥»¥Ã¥È¥³¥Ş¥ó¥É	    */
+/* GDC ã‚³ãƒãƒ³ãƒ‰ */
+#define GDC_RESET	0x0000		/* ãƒªã‚»ãƒƒãƒˆã‚³ãƒãƒ³ãƒ‰	    */
 
-/* sync ¥³¥Ş¥ó¥É */
-#define MODE_DISP	0x0f		/* É½¼¨³«»Ï		*/
-#define MODE_UNDISP	0x0e		/* É½¼¨Ää»ß		*/
+/* sync ã‚³ãƒãƒ³ãƒ‰ */
+#define MODE_DISP	0x0f		/* è¡¨ç¤ºé–‹å§‹		*/
+#define MODE_UNDISP	0x0e		/* è¡¨ç¤ºåœæ­¢		*/
 
 
-/* ¥í¡¼¥«¥ë´Ø¿ô */
-static ER	gdc_reset(void);			/* GDC¤Î¥ê¥»¥Ã¥È¤ò¹Ô¤¦			*/
-static ER	gdc_display(void);			/* É½¼¨³«»Ï				*/
-static ER	gdc_undisplay(void);			/* É½¼¨Ää»ß				*/
-static ER	gdc_line (W x1, W y1, W x2, W y2);	/* ²èÌÌ¾å¤ËÄ¾Àş¤ò°ú¤¯			*/
-static ER	gdc_circle (W x, W y, W r);		/* ²èÌÌ¾å¤Ë±ß¤òÉÁ¤¯			*/
-static ER	gdc_dot (W x, W y);			/* ²èÌÌ¾å¤ËÅÀ¤òÉÁ¤¯			*/
-static ER	gdc_write (W num, ...);			/* GDC¤Ë¥³¥Ş¥ó¥É¤òÁ÷½Ğ¤¹¤ë 		*/
-static ER	point2addr (W x, W y);			/* POINT2ADDR: x,y ºÂÉ¸¤«¤é VRAM	*/ 
-							/* ¾å¤Î¥¢¥É¥ì¥¹¤ò·×»»¤¹¤ë 		*/
+/* ãƒ­ãƒ¼ã‚«ãƒ«é–¢æ•° */
+static ER	gdc_reset(void);			/* GDCã®ãƒªã‚»ãƒƒãƒˆã‚’è¡Œã†			*/
+static ER	gdc_display(void);			/* è¡¨ç¤ºé–‹å§‹				*/
+static ER	gdc_undisplay(void);			/* è¡¨ç¤ºåœæ­¢				*/
+static ER	gdc_line (W x1, W y1, W x2, W y2);	/* ç”»é¢ä¸Šã«ç›´ç·šã‚’å¼•ã			*/
+static ER	gdc_circle (W x, W y, W r);		/* ç”»é¢ä¸Šã«å††ã‚’æã			*/
+static ER	gdc_dot (W x, W y);			/* ç”»é¢ä¸Šã«ç‚¹ã‚’æã			*/
+static ER	gdc_write (W num, ...);			/* GDCã«ã‚³ãƒãƒ³ãƒ‰ã‚’é€å‡ºã™ã‚‹ 		*/
+static ER	point2addr (W x, W y);			/* POINT2ADDR: x,y åº§æ¨™ã‹ã‚‰ VRAM	*/ 
+							/* ä¸Šã®ã‚¢ãƒ‰ãƒ¬ã‚¹ã‚’è¨ˆç®—ã™ã‚‹ 		*/
 
-/* SYNC ¥³¥Ş¥ó¥É¡¨²èÌÌ¤Î³Æ¼ïÀßÄê */
+/* SYNC ã‚³ãƒãƒ³ãƒ‰ï¼›ç”»é¢ã®å„ç¨®è¨­å®š */
 static ER	gdc_sync (B mode, UH column, UH vs, UH hs, UH hfp, UH hbp, UH vfp, UH line, UH vbp);
 
 static void	gdc_server (void);
 
-static ID	deviceid;	/* ¥Ç¥Ğ¥¤¥¹ÈÖ¹æ(¥Ç¥Ğ¥¤¥¹¥Æ¡¼¥Ö¥ë¤Î¥¨¥ó¥È¥êÈÖ¹æ) */
-				/* ¼çÈÖ¹æ¤È¤·¤Æ»ÈÍÑ¤¹¤ë¡£*/
-static ID	taskid;		/* £Ğ£Ä£Ã£·£²£²£°¥É¥é¥¤¥Ğ¤Î¥¿¥¹¥¯£É£Ä */
+static ID	deviceid;	/* ãƒ‡ãƒã‚¤ã‚¹ç•ªå·(ãƒ‡ãƒã‚¤ã‚¹ãƒ†ãƒ¼ãƒ–ãƒ«ã®ã‚¨ãƒ³ãƒˆãƒªç•ªå·) */
+				/* ä¸»ç•ªå·ã¨ã—ã¦ä½¿ç”¨ã™ã‚‹ã€‚*/
+static ID	taskid;		/* ï¼°ï¼¤ï¼£ï¼—ï¼’ï¼’ï¼ãƒ‰ãƒ©ã‚¤ãƒã®ã‚¿ã‚¹ã‚¯ï¼©ï¼¤ */
 
 
 
 /*****************************************************************************
- * init_gdc7220 --- PD7220 ¤Î½é´ü²½
+ * init_gdc7220 --- PD7220 ã®åˆæœŸåŒ–
  *
- * °ú¿ô¡§
- *	¤Ê¤·
+ * å¼•æ•°ï¼š
+ *	ãªã—
  *
- * ÊÖ¤êÃÍ¡§
- *	¥¨¥é¡¼ÈÖ¹æ
- *	E_OK	Àµ¾ï½ªÎ»
+ * è¿”ã‚Šå€¤ï¼š
+ *	ã‚¨ãƒ©ãƒ¼ç•ªå·
+ *	E_OK	æ­£å¸¸çµ‚äº†
  *
- * µ¡Ç½¡§
- *	¥°¥é¥Õ¥£¥Ã¥¯ GDC ¤Î½é´ü²½¤ò¹Ô¤¦¡£
- *	²èÌÌÀßÄê¤¹¤ë¡§
- *	  ¥µ¥¤¥º¡§	640x400
- *	  ¥«¥é¡¼¿ô¡§	16 Color
+ * æ©Ÿèƒ½ï¼š
+ *	ã‚°ãƒ©ãƒ•ã‚£ãƒƒã‚¯ GDC ã®åˆæœŸåŒ–ã‚’è¡Œã†ã€‚
+ *	ç”»é¢è¨­å®šã™ã‚‹ï¼š
+ *	  ã‚µã‚¤ã‚ºï¼š	640x400
+ *	  ã‚«ãƒ©ãƒ¼æ•°ï¼š	16 Color
  *
  *
- * ½èÍı³µÍ×¡§
- *	1. RESET¥³¥Ş¥ó¥É¤ÎÈ¯¹Ô
- *	2. Æ°ºî¥â¡¼¥É¤ÎÁªÂò 
- *	3. É½¼¨¤Î³«»Ï
+ * å‡¦ç†æ¦‚è¦ï¼š
+ *	1. RESETã‚³ãƒãƒ³ãƒ‰ã®ç™ºè¡Œ
+ *	2. å‹•ä½œãƒ¢ãƒ¼ãƒ‰ã®é¸æŠ 
+ *	3. è¡¨ç¤ºã®é–‹å§‹
  *
- *	4. ¥É¥é¥¤¥ĞÅĞÏ¿¤Î¼Â¹Ô
+ *	4. ãƒ‰ãƒ©ã‚¤ãƒç™»éŒ²ã®å®Ÿè¡Œ
  *
  */
 ER
@@ -116,7 +116,7 @@ init_pd7220 (void)
 */
   gdc_display ();
 
-  err = def_dev (L"£Ä£Ó£Ğ", CHAR, ANY_DEVICE, &deviceid);
+  err = def_dev (L"ï¼¤ï¼³ï¼°", CHAR, ANY_DEVICE, &deviceid);
   if (err != E_OK)
     {
       printk ("cannot initialize for PD7220 device. err = %d\n", err);
@@ -152,10 +152,10 @@ gdc_server (void)
       if (err == E_OK)
 	{
 	  printk ("GDC: Receive request %d\n", rcv_packet.command);
-	  /* ¥³¥Ş¥ó¥É²ò¼áÉô¤ò¼Â¹Ô¤¹¤ë */
+	  /* ã‚³ãƒãƒ³ãƒ‰è§£é‡ˆéƒ¨ã‚’å®Ÿè¡Œã™ã‚‹ */
 	  switch (rcv_packet.command)
 	    {
-	      /* IO_NULL, IO_OPEN, IO_CLOSE ¤Ë¤Ä¤¤¤Æ¤Ï²¿¤â¤·¤Ê¤¤ */
+	      /* IO_NULL, IO_OPEN, IO_CLOSE ã«ã¤ã„ã¦ã¯ä½•ã‚‚ã—ãªã„ */
 	    case IO_NULL:
 	    case IO_OPEN:
 	    case IO_CLOSE:
@@ -212,7 +212,7 @@ gdc_control (struct io_control_packet *pack)
 /* ------------------------------------------------------------------------------ */
 
 
-/* GDC¤Î¥ê¥»¥Ã¥È¤ò¹Ô¤¦	*/
+/* GDCã®ãƒªã‚»ãƒƒãƒˆã‚’è¡Œã†	*/
 static ER
 gdc_reset(void)
 {
@@ -220,7 +220,7 @@ gdc_reset(void)
 }
 
 
-/* É½¼¨³«»Ï		*/
+/* è¡¨ç¤ºé–‹å§‹		*/
 static ER
 gdc_display(void)
 {
@@ -228,7 +228,7 @@ gdc_display(void)
 }
 
 
-/* É½¼¨Ää»ß		*/
+/* è¡¨ç¤ºåœæ­¢		*/
 static ER	
 gdc_undisplay(void)
 {
@@ -236,7 +236,7 @@ gdc_undisplay(void)
 }
 
 
-/* ²èÌÌ¾å¤ËÄ¾Àş¤ò°ú¤¯	*/
+/* ç”»é¢ä¸Šã«ç›´ç·šã‚’å¼•ã	*/
 static ER
 gdc_line (W x1, W y1, W x2, W y2)	
 {
@@ -244,7 +244,7 @@ gdc_line (W x1, W y1, W x2, W y2)
 }
 
 
-/* ²èÌÌ¾å¤Ë±ß¤òÉÁ¤¯	*/
+/* ç”»é¢ä¸Šã«å††ã‚’æã	*/
 static ER
 gdc_circle (W x, W y, W r)
 {
@@ -252,44 +252,44 @@ gdc_circle (W x, W y, W r)
 }
 
 
-/* ²èÌÌ¾å¤ËÅÀ¤òÉÁ¤¯	*/
+/* ç”»é¢ä¸Šã«ç‚¹ã‚’æã	*/
 static ER
 gdc_dot (W x, W y)
 {
   VB	*addr;
   B	buf; 
 
-/* ¥×¥ì¡¼¥ó 0 */
-  addr = (VB *)PLANE0;	/* VRAM ¤ÎÀèÆ¬¥¢¥É¥ì¥¹ */
+/* ãƒ—ãƒ¬ãƒ¼ãƒ³ 0 */
+  addr = (VB *)PLANE0;	/* VRAM ã®å…ˆé ­ã‚¢ãƒ‰ãƒ¬ã‚¹ */
   addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 
-/* ¥×¥ì¡¼¥ó 1 */
-  addr = (VB *)PLANE1;	/* VRAM ¤ÎÀèÆ¬¥¢¥É¥ì¥¹ */
+/* ãƒ—ãƒ¬ãƒ¼ãƒ³ 1 */
+  addr = (VB *)PLANE1;	/* VRAM ã®å…ˆé ­ã‚¢ãƒ‰ãƒ¬ã‚¹ */
   addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 
-/* ¥×¥ì¡¼¥ó 2 */
-  addr = (VB *)PLANE2;	/* VRAM ¤ÎÀèÆ¬¥¢¥É¥ì¥¹ */
+/* ãƒ—ãƒ¬ãƒ¼ãƒ³ 2 */
+  addr = (VB *)PLANE2;	/* VRAM ã®å…ˆé ­ã‚¢ãƒ‰ãƒ¬ã‚¹ */
   addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 
-/* ¥×¥ì¡¼¥ó 3 */
-  addr = (VB *)PLANE3;	/* VRAM ¤ÎÀèÆ¬¥¢¥É¥ì¥¹ */
-  addr = (y * (640 / 8)) + (x / 8);
+/* ãƒ—ãƒ¬ãƒ¼ãƒ³ 3 */
+  addr = (VB *)PLANE3;	/* VRAM ã®å…ˆé ­ã‚¢ãƒ‰ãƒ¬ã‚¹ */
+  addr += (y * (640 / 8)) + (x / 8);
   buf = *addr;
   buf |= 1 << (x % 8);
   *addr = buf;
 }
 
 
-/* SYNC ¥³¥Ş¥ó¥É¡¨²èÌÌ¤Î³Æ¼ïÀßÄê */
+/* SYNC ã‚³ãƒãƒ³ãƒ‰ï¼›ç”»é¢ã®å„ç¨®è¨­å®š */
 static ER
 gdc_sync (B mode, UH column, UH vs, UH hs, UH hfp, UH hbp, UH vfp, UH line, UH vbp)
 {
@@ -299,7 +299,7 @@ gdc_sync (B mode, UH column, UH vs, UH hs, UH hfp, UH hbp, UH vfp, UH line, UH v
 
 
 
-/* GDC¤Ë¥³¥Ş¥ó¥É¤òÁ÷½Ğ¤¹¤ë */
+/* GDCã«ã‚³ãƒãƒ³ãƒ‰ã‚’é€å‡ºã™ã‚‹ */
 static ER
 gdc_write (W num, ...)
 {

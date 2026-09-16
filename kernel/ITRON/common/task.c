@@ -1,6 +1,6 @@
 /*
 
-B-Free Project ������ʪ�� GNU Generic PUBLIC LICENSE �˽����ޤ���
+B-Free Project の生成物は GNU Generic PUBLIC LICENSE に従います。
 
 GNU GENERAL PUBLIC LICENSE
 Version 2, June 1991
@@ -12,29 +12,29 @@ Version 2, June 1991
 */
 /* task.c $Revision: 1.1.1.1 $
  *
- * ������������Ԥ���
+ * タスク管理を行う。
  *
  *
- * �����ؿ��ꥹ��
+ * 外部関数リスト
  *
- *	init_task ()		--- �����������ǡ����ν����
- *	init_task1 ()		--- �����ƥ�����������������ȵ�ư
- *	cre_tsk ()		--- ������������
- *	new_task ()		--- Ǥ�դΥ����� ID �ǤΥ���������
+ *	init_task ()		--- タスク管理データの初期化
+ *	init_task1 ()		--- システム管理タスクの生成と起動
+ *	cre_tsk ()		--- タスクの生成
+ *	new_task ()		--- 任意のタスク ID でのタスク生成
  *
- * ����ѿ�
- *	run_task		--- ����������Υ�����
+ * 大域変数
+ *	run_task		--- 現在走行中のタスク
  *
- * �����ؿ� (static)
+ * 内部関数 (static)
  *
- *	make_task_context ()	--- �����������������롣
+ *	make_task_context ()	--- タスク情報を作成する。
  *
- * �����ѿ� (static)
+ * 内部変数 (static)
  *
  *	task
  *	task_buffer
  *	ready_task
- *	dispatch_flag		�ǥ����ѥå����뤫�ɤ����Υե饰
+ *	dispatch_flag		ディスパッチするかどうかのフラグ
  */
 /*
  * $Log: task.c,v $
@@ -75,41 +75,41 @@ Version 2, June 1991
  * Modifies for source cleaning. Most of these are for avoid gcc's -Wall message.
  *
  * Revision 1.5  1998/02/24 14:08:26  night
- * sta_tsk() ���ѹ���
- * sta_tsk() ����2���� stacd �� 0 �����礭�����ˤϡ�
- * �����å��Υȥåץ��ɥ쥹�� stacd ����ʬ����������
- * ����褦�ˤ�����
+ * sta_tsk() の変更。
+ * sta_tsk() の第2引数 stacd が 0 よりも大きい時には、
+ * スタックのトップアドレスを stacd の値分小さくする
+ * するようにした。
  *
  * Revision 1.4  1997/10/11 16:21:41  night
- * ���ޤ��ޤ�������
+ * こまごました修正
  *
  * Revision 1.3  1997/07/02 13:25:05  night
- * sta_tsk �¹Ի��ΥǥХå�ʸ����
+ * sta_tsk 実行時のデバッグ文を削除
  *
  * Revision 1.2  1997/03/25 13:30:47  night
- * �ؿ��Υץ��ȥ�����������ɲä���Ӱ�����������ν���
+ * 関数のプロトタイプ宣言の追加および引数の不整合の修正
  *
  * Revision 1.1  1996/07/22  13:39:15  night
- * IBM PC �� ITRON �κǽ����Ͽ
+ * IBM PC 版 ITRON の最初の登録
  *
  * Revision 1.13  1995/10/01  12:58:37  night
- * �ؿ� wup_tsk() ����� wakeup ���륿�����ξ���Υ��ɥ쥹�Υ����å�����
- * �á�
+ * 関数 wup_tsk() の中で wakeup するタスクの情報のアドレスのチェックを追
+ * 加。
  *
  * Revision 1.12  1995/09/21  15:51:12  night
- * �������ե��������Ƭ�� Copyright notice ������ɲá�
+ * ソースファイルの先頭に Copyright notice 情報を追加。
  *
  * Revision 1.11  1995/09/17  16:57:07  night
- * task_switch() �ƤӽФ����ν������ѹ���
- * �����ȥ��������ͥ���̤��⤤�����������ʤ���祿���������å���Ԥ�
- * �ʤ��ä�����ͥ���̤��㤤�������ؤ��ڤ꤫����褦���ѹ�������
+ * task_switch() 呼び出し時の処理の変更。
+ * カレントタスクより優先順位が高いタスクがいない場合タスクスイッチを行わ
+ * なかったが、優先順位の低いタスクへも切りかえるように変更した。
  *
  * Revision 1.10  1995/09/14  04:32:05  night
- * ���������֤�ɽ������ؿ� (print_list()) ���ѹ���
- * ɽ�����Ƥ˥�������٥���ɲá�
+ * タスク状態を表示する関数 (print_list()) の変更。
+ * 表示内容にタスクレベルを追加。
  *
  * Revision 1.9  1995/08/26  02:15:23  night
- * RCS �� Log �ޥ������ɲá�
+ * RCS の Log マクロの追加。
  *
  *
  */
@@ -122,14 +122,14 @@ Version 2, June 1991
 #include "interrupt.h"
 #include "lowlib.h"
 /***************************************************************************
- *	�����������Ѥ��ѿ�
+ *	タスク管理用の変数
  *
  *
  */
 
 extern UW system_ticks;
 
-T_TCB *run_task;		/* ���ߡ�������Υ����� */
+T_TCB *run_task;		/* 現在、走行中のタスク */
 char doing = 0;
 
 static T_TCB *task;
@@ -231,17 +231,17 @@ main()
 
 
 
-/* init_task --- �����������ν����
+/* init_task --- タスク管理の初期化
  *
- * TCB �ơ��֥�����Ƥ��������롣�����ơ������ȥ������򥿥����ֹ� -1 
- * �Υ������Ȥ��롣
+ * TCB テーブルの内容を初期化する。そして、カレントタスクをタスク番号 -1 
+ * のタスクとする。
  *
  */
 void init_task(void)
 {
     W i;
 
-    /* TCB �ơ��֥�κ����� GDT �ؤ���Ͽ��
+    /* TCB テーブルの作成と GDT への登録。
      */
     for (i = 0; i < NTASK; i++) {
 	task_buffer[i].tskstat = TTS_NON;
@@ -258,46 +258,46 @@ void init_task(void)
 }
 
 
-/* init_task1 --- ������1 �ξ�����������롣
+/* init_task1 --- タスク1 の情報を初期化する。
  *
- * ������	�ʤ�
+ * 引数：	なし
  *
- * ���͡�	�ʤ�
+ * 返値：	なし
  *
- * ������	������ 1 �ξ�����������롣
- *		������ 1 �ξ���ϡ�proc_table[0] �˼�����롣
- *		�ʲ��ξ�����������롣
- *		  cr3		���ߤ� cr3 �����Ƥ�����롣
- *		  state		�ץ��������֤� TTS_RUN ������(���Υ������ϼ¹���)
- *				ͥ���٤� 0 ������
- *				�ƥ������Υ����� id �� 0 �����ꡣ
- *		�������쥸�������ͤ� task[1] �� context �Υ��ɥ쥹
- *		�����ꡣ
- *		�������쥸�������ͤϡ�������ˤϡ��ʤˤ�ƶ����ʤ�����
- *		���������ڤ괹�����Ȥ������ߤΥ������쥸�����λؤ�TSS
- *		�ΰ�˺����ߤΥ�������������򤹤롣
- *		���Τ��ᡢ�����˥������쥸�������ͤ����ꤷ�Ƥ���ɬ�פ����롣
+ * 処理：	タスク 1 の情報を初期化する。
+ *		タスク 1 の情報は、proc_table[0] に収められる。
+ *		以下の情報を初期化する。
+ *		  cr3		現在の cr3 の内容を入れる。
+ *		  state		プロセス状態を TTS_RUN に設定(このタスクは実行中)
+ *				優先度を 0 に設定
+ *				親タスクのタスク id を 0 に設定。
+ *		タスクレジスタの値を task[1] の context のアドレス
+ *		に設定。
+ *		タスクレジスタの値は、設定時には、なにも影響がないが、
+ *		タスクを切り換えたとき、現在のタスクレジスタの指すTSS
+ *		領域に今現在のタスク情報を退避する。
+ *		そのため、事前にタスクレジスタの値を設定しておく必要がある。
  */
 void init_task1(void)
 {
-    /* ������ 1 �ξ�����������롣 */
+    /* タスク 1 の情報を初期化する。 */
     bzero(&task[KERNEL_TASK], sizeof(T_TCB));	/* zero clear */
-    /* ���������֡����Ծ��֤˥��å� */
+    /* タスク状態：走行状態にセット */
     task[KERNEL_TASK].tskstat = TTS_RUN;
 #if 1
-    /* ��������٥�ϡ�31(�����)�˥��å� */
+    /* タスクレベルは、31(最低位)にセット */
     task[KERNEL_TASK].tsklevel = MAX_PRIORITY;
 #else
-    /* ������λ����Ǥ� KERNEL LEVEL �˥��åȤ��Ƥ��� */
+    /* 初期化の時点では KERNEL LEVEL にセットしておく */
     task[KERNEL_TASK].tsklevel = KERNEL_LEVEL;
 #endif
-    /* ������ ID �ϡ�KERNEL_TASK(1)�˥��å� */
+    /* タスク ID は、KERNEL_TASK(1)にセット */
     task[KERNEL_TASK].tskid = KERNEL_TASK;
 
 #ifdef I386
-    /* ������ 1 �Υ���ƥ����Ⱦ������������                    */
-    /* �����ξ���ϡ����˥�����1�������ȥ������ˤʤä�����    */
-    /* ���Ѥ���                                                   */
+    /* タスク 1 のコンテキスト情報を初期化する                    */
+    /* これらの情報は、次にタスク1がカレントタスクになった時に    */
+    /* 使用する                                                   */
     task[KERNEL_TASK].context.cr3 = (UW) PAGE_DIR_ADDR;
     task[KERNEL_TASK].context.cs = KERNEL_CSEG;
     task[KERNEL_TASK].context.ds = KERNEL_DSEG;
@@ -318,28 +318,28 @@ void init_task1(void)
      */
 #endif				/* I386 */
 
-    /* ���������ϥ�����1�Ǥ��롣 */
+    /* 現タスクはタスク1である。 */
     run_task = &(task[KERNEL_TASK]);
     ready_task[run_task->tsklevel]
 	= add_tcb_list(ready_task[run_task->tsklevel], run_task);
 
-    /* ���쥯���򥻥å� */
+    /* セレクタをセット */
     task[KERNEL_TASK].tss_selector =
 	((KERNEL_TASK + TSS_BASE) << 3) & 0xfff8;
     create_context(&task[KERNEL_TASK]);
 
-    /* �������쥸�������ͤ����ꤹ��. */
+    /* タスクレジスタの値を設定する. */
 #ifdef I386
     load_task_register((KERNEL_TASK + TSS_BASE) << 3);
 #endif				/* I386 */
 }
 
 
-/* �������������������:
+/* タスク情報を生成する:
  *
- *	������
- *		task		��������TCB�ΰ�ؤΥݥ���
- *		stack_size	�������Υ����å�������
+ *	引数：
+ *		task		タスクのTCB領域へのポインタ
+ *		stack_size	タスクのスタックサイズ
  *
  */
 static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
@@ -352,16 +352,16 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
 	return (err);
     }
 
-    /* �����å��������Ͽ */
+    /* スタック情報の登録 */
     task->stksz0 = task->stksz = pk_ctsk->stksz;
     task->stackptr0 = task->stackptr = (B *) sp;
 
 #ifdef I386
-    /* �쥸������򤹤٤ƽ��������:
-     * reset_registers()  �ϡ��ʲ��ΰ�����ɬ�פȤ��롧
-     *   1) TCB �ΰ�ؤΥݥ���
-     *   2) �������Υ������ȥ��ɥ쥹
-     *   3) �����ͥ륹���å��Υ��ɥ쥹
+    /* レジスタ類をすべて初期化する:
+     * reset_registers()  は、以下の引数を必要とする：
+     *   1) TCB 領域へのポインタ
+     *   2) タスクのスタートアドレス
+     *   3) カーネルスタックのアドレス
      */
 /*  task->context.cr3 = (UW)PAGE_DIR_ADDR; */
     task->context.cs = KERNEL_CSEG;
@@ -374,7 +374,7 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
     task->context.esp = (UW) ((sp + pk_ctsk->stksz));
     task->context.ebp = (UW) ((sp + pk_ctsk->stksz));
     task->initial_stack = task->context.esp;
-    /* cre_tsk ����� bzero �ˤ�äƽ��������롥
+    /* cre_tsk の中で bzero によって初期化される．
        task->context.ldtr = 0;
        task->context.iobitmap = 0;
      */
@@ -383,7 +383,7 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
     printk("(UW)pk_ctsk->startaddr = 0x%x\n", (UW) pk_ctsk->startaddr);
 #endif
     task->context.eflags = EFLAG_IBIT | EFLAG_IOPL3;
-    /* cre_tsk ����� bzero �ˤ�äƽ��������롥
+    /* cre_tsk の中で bzero によって初期化される．
        task->context.eax = 0;
        task->context.ebx = 0;
        task->context.ecx = 0;
@@ -394,15 +394,15 @@ static ER make_task_context(T_TCB * task, T_CTSK * pk_ctsk)
        task->context.iobitmap = 0;
      */
     task->tss_selector = ((TSS_BASE + task->tskid) << 3) & 0xfff8;
-    task->use_fpu = 0;		/* ������֤Ǥ� FPU �����Ѥ��ʤ� */
+    task->use_fpu = 0;		/* 初期状態では FPU は利用しない */
 #endif				/* I386 */
-    create_context(task);	/* ����ƥ������ΰ�(TSS)�Υ��ɥ쥹��GDT�˥��å� */
+    create_context(task);	/* コンテキスト領域(TSS)のアドレスをGDTにセット */
     return (E_OK);		/* set_task_registers (task, pk_ctsk->startaddr, sp)); */
 }
 
-/* make_task_stack --- �����������å����������롣
+/* make_task_stack --- タスクスタックを生成する。
  *
- * �����ͥ�⡼�ɤǻ��Ѥ��륿�����ѥ����å����������롣
+ * カーネルモードで使用するタスク用スタックを生成する。
  *
  */
 static ER make_task_stack(T_TCB * task, W size, VP * sp)
@@ -412,9 +412,9 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
 #endif
 
 /*  err = pget_blk (&sp, TMPL_SYS, ROUNDUP (size, PAGE_SIZE)); */
-    /* �����å��ݥ��󥿤� 0x80000000 �β��ۥ��ɥ쥹�ǥ�����������ɬ�פ����롣 */
+    /* スタックポインタは 0x80000000 の仮想アドレスでアクセスする必要がある。 */
     (*sp) = palloc(PAGES(size));
-    (UW) (*sp) |= 0x80000000;
+    *sp = (VP)((UW)(*sp) | 0x80000000);
 #ifdef TSKSW_DEBUG
     printk("sp = 0x%x\n", *sp);
 #endif
@@ -429,24 +429,24 @@ static ER make_task_stack(T_TCB * task, W size, VP * sp)
 }
 
 /*****************************************************************************
- * �������ꥹ�Ȥ����뤿��δؿ���
+ * タスクリストを操作するための関数群
  *
  * 
 ******************************************************************************/
 
-/* add_tcb_list --- ���� list �ǻ��ꤵ�줿�ꥹ�Ȥΰ��ֺǸ�˥��������ɲä��롣
+/* add_tcb_list --- 引数 list で指定されたリストの一番最後にタスクを追加する。
  *
- * ����:
+ * 引数:
  *	list
  *	new
  *
- * �֤���:
- *	�������ꥹ�ȤؤΥݥ���
+ * 返り値:
+ *	新しいリストへのポインタ
  *
- * ����.
- *	���δؿ���¹Ԥ��Ƥ⡢�ꥹ�Ȥ���Ƭ�ݥ��󥿤� *�ѹ�����ʤ�*��
- *	���������ꥹ�Ȥ����Ǥ��ʤ��ä����ˤ��㳰�ǡ����ξ��ˤ�
- *	���� new �����Ǥ������ĥꥹ�Ȥ��֤���
+ * 注意.
+ *	この関数を実行しても、リストの先頭ポインタは *変更されない*。
+ *	ただし、リストの要素がなかった場合には例外で、その場合には
+ *	引数 new の要素だけをもつリストを返す。
  *
  */
 static T_TCB *add_tcb_list(T_TCB * list, T_TCB * new)
@@ -465,19 +465,19 @@ static T_TCB *add_tcb_list(T_TCB * list, T_TCB * new)
     return (list);
 }
 
-/* ins_tcb_list --- ���� list �ǻ��ꤵ�줿�ꥹ�Ȥΰ��ֺǽ�˥��������������롣
+/* ins_tcb_list --- 引数 list で指定されたリストの一番最初にタスクを挿入する。
  *
- * ����:
+ * 引数:
  *	list
  *	new
  *
- * �֤���:
- *	�������ꥹ�ȤؤΥݥ���
+ * 返り値:
+ *	新しいリストへのポインタ
  *
- * ����.
- *	���δؿ���¹Ԥ�����̡��ꥹ�Ȥ���Ƭ�ݥ��󥿤��ѹ�����롣
- *	��äơ����δؿ����֤��������ꥹ�ȤؤΥݥ��󥿤�ꥹ�ȥݥ��󥿤�
- *	����������ɬ�פ����롣
+ * 注意.
+ *	この関数を実行した結果、リストの先頭ポインタが変更される。
+ *	よって、この関数が返す新しいリストへのポインタをリストポインタに
+ *	再代入する必要がある。
  */
 static T_TCB *ins_tcb_list(T_TCB * list, T_TCB * new)
 {
@@ -496,25 +496,25 @@ static T_TCB *ins_tcb_list(T_TCB * list, T_TCB * new)
 }
 
 
-/* del_tcb_list --- ���� list �ǻ��ꤵ�줿�ꥹ�Ȥ��顢���� del �������롣
+/* del_tcb_list --- 引数 list で指定されたリストから、要素 del を削除する。
  *
- * ����:
+ * 引数:
  *	list
  *	del
  *
- * �֤���:
- *	�������ꥹ�ȤؤΥݥ���
+ * 返り値:
+ *	新しいリストへのポインタ
  *
- * �㳰:
- *	1) �⤷������ del ���ꥹ�Ȥ���Ƭ���Ǥξ�硢�ꥹ�Ȥ���Ƭ�ݥ��󥿤ϡ�
- *	   del �μ������Ǥˤʤ롣
- *	2) �⤷������ del ���ꥹ�Ȥ�ͣ������Ǥξ�硢�֤��ͤȤ��� NULL ��
- *	   �֤���
+ * 例外:
+ *	1) もし、要素 del がリストの先頭要素の場合、リストの先頭ポインタは、
+ *	   del の次の要素になる。
+ *	2) もし、要素 del がリストの唯一の要素の場合、返り値として NULL を
+ *	   返す。
  *
- * ����.
- *	���δؿ���¹Ԥ�����̡��ꥹ�Ȥ���Ƭ�ݥ��󥿤��ѹ�����롣
- *	��äơ����δؿ����֤��������ꥹ�ȤؤΥݥ��󥿤�ꥹ�ȥݥ��󥿤�
- *	����������ɬ�פ����롣
+ * 注意.
+ *	この関数を実行した結果、リストの先頭ポインタが変更される。
+ *	よって、この関数が返す新しいリストへのポインタをリストポインタに
+ *	再代入する必要がある。
  *
  */
 static T_TCB *del_tcb_list(T_TCB * list, T_TCB * del)
@@ -525,11 +525,11 @@ static T_TCB *del_tcb_list(T_TCB * list, T_TCB * del)
 	return (NULL);
     if (del == NULL)
 	return (list);
-    /* del �ϥꥹ�Ȥ���Ƭ�ˤ���Ȥϸ¤�ʤ����ꥹ�Ȥ�õ������ɬ�פ����� */
+    /* del はリストの先頭にあるとは限らない。リストを探索する必要がある */
     if (list == del) {
-	/* �ꥹ�Ȥ���Ƭ�ˤ��ä���� */
+	/* リストの先頭にあった場合 */
 	if (list == list->next) {
-	    /* �ꥹ�Ȥ����Ǥ���Ĥ���̵���ä� */
+	    /* リストに要素が一つしか無かった */
 	    del->next = NULL;
 	    del->before = NULL;
 	    return (NULL);
@@ -554,19 +554,19 @@ static T_TCB *del_tcb_list(T_TCB * list, T_TCB * del)
     return (list);
 }
 
-/* task_switch --- �������ڤ괹��
+/* task_switch --- タスク切り換え
  *
- * ������	save_nowtask	
- *                  TRUE �ΤȤ������������� ready ���������塼���������ʤ���
- *		    FALSE �ΤȤ������������� ready ���������塼���������롥
+ * 引数：	save_nowtask	
+ *                  TRUE のとき、現タスクを ready タスクキューから削除しない．
+ *		    FALSE のとき、現タスクを ready タスクキューから削除する．
  *
- * ���͡�	���顼�ֹ�
+ * 返値：	エラー番号
  *
- * ������	ready_task ����ǡ�����ͥ���̤ι⤤�������򥫥���
- *		�������ˤ��롣
- *		�ºݤΥ������ڤ괹���ϡ�resume () �ˤ�äƤ����ʤ�
- *		���Τ��ᡢ���δؿ�����Ǥν����ϡ�run_tsk �ѿ���
- *		ready_task[] �ι�����Ԥ��Τ���Ȥʤ롣
+ * 処理：	ready_task の中で、一番優先順位の高いタスクをカレント
+ *		タスクにする。
+ *		実際のタスク切り換えは、resume () によっておこなう
+ *		そのため、この関数の中での処理は、run_tsk 変数と
+ *		ready_task[] の更新を行うのが主となる。
  *		
  */
 ER task_switch(BOOL save_nowtask)
@@ -605,14 +605,14 @@ ER task_switch(BOOL save_nowtask)
 
 #ifdef notdef
     if (save_nowtask) {
-	/* ���������� ready ���������塼����Ƭ����¸���� */
+	/* 現タスクを ready タスクキューの先頭に保存する */
 	run_task->tskstat = TTS_RDY;
 	ready_task[run_task->tsklevel]
 	    = ins_tcb_list(ready_task[run_task->tsklevel], run_task);
     }
 #else
     if (save_nowtask == FALSE) {
-	/* ���������� ready ���������塼��������� */
+	/* 現タスクを ready タスクキューから取り除く */
 	ready_task[run_task->tsklevel]
 	    = del_tcb_list(ready_task[run_task->tsklevel], run_task);
     } else {
@@ -642,7 +642,7 @@ ER task_switch(BOOL save_nowtask)
 	return (E_NOEXS);
     }
 
-    /* ���򤷤��������������������ʤ�С����⤷�ʤ������ */
+    /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (run_task == ready_task[tskid]) {
 	run_task->tskstat = old_stat;
 #ifdef notdef
@@ -653,7 +653,7 @@ ER task_switch(BOOL save_nowtask)
 	return (E_OK);
     }
 
-    /* ���򤷤��������� run_task �ˤ��� */
+    /* 選択したタスクを run_task にする */
     tcb = ready_task[tskid];
     if (tcb->tskstat != TTS_RDY) {
 	doing = 0;
@@ -695,18 +695,18 @@ ER task_switch(BOOL save_nowtask)
     if (old->use_fpu)
 	fpu_save(old);
 
-/* resume ��ƤӽФ���resume �ΰ����ϡ�TSS �ؤΥ��쥯�� */
+/* resume を呼び出す。resume の引数は、TSS へのセレクタ */
 #ifdef TSKSW_DEBUG
     printk("resume (0x%x)\n", ((tcb->tskid + TSS_BASE) << 3) & 0xfff8);
 #endif
 #if 0
-    ena_int();			/* resume ����Ǽ¹Ԥ����Ϥ� */
+    ena_int();			/* resume の中で実行されるはず */
 #endif
     resume((UW) (tcb->tskid + TSS_BASE) << 3);
 /*  print_context (((tcb->tskid + TSS_BASE) << 3) & 0xfff8); */
     doing = 0;
 
-    /* ����˽�λ���������Υ����������å��λ��ˤ�������� */
+    /* 正常に終了した：次のタスクスイッチの時にここに戻る */
     if (run_task->use_fpu)
 	fpu_restore(run_task);
 
@@ -714,18 +714,18 @@ ER task_switch(BOOL save_nowtask)
 }
 
 #if 0
-/* task_switch2 --- �������ڤ괹��
+/* task_switch2 --- タスク切り換え
  *
- * ������	save_nowtask	TRUE �ΤȤ������������� ready ���������塼����¸����
- *				FALSE �ΤȤ������������� ready ���������塼����¸���ʤ�
+ * 引数：	save_nowtask	TRUE のとき、現タスクを ready タスクキューに保存する
+ *				FALSE のとき、現タスクを ready タスクキューに保存しない
  *
- * ���͡�	���顼�ֹ�
+ * 返値：	エラー番号
  *
- * ������	ready_task ����ǡ�����ͥ���̤ι⤤�������򥫥���
- *		�������ˤ��롣
- *		�ºݤΥ������ڤ괹���ϡ�resume () �ˤ�äƤ����ʤ�
- *		���Τ��ᡢ���δؿ�����Ǥν����ϡ�run_tsk �ѿ���
- *		ready_task[] �ι�����Ԥ��Τ���Ȥʤ롣
+ * 処理：	ready_task の中で、一番優先順位の高いタスクをカレント
+ *		タスクにする。
+ *		実際のタスク切り換えは、resume () によっておこなう
+ *		そのため、この関数の中での処理は、run_tsk 変数と
+ *		ready_task[] の更新を行うのが主となる。
  *		
  */
 ER task_switch2(BOOL save_nowtask)
@@ -748,7 +748,7 @@ ER task_switch2(BOOL save_nowtask)
     }
     ena_int();
 
-    if (save_nowtask) {		/* ���������� ready ���������塼����¸���� */
+    if (save_nowtask) {		/* 現タスクを ready タスクキューに保存する */
 	run_task->tskstat = TTS_RDY;
 	ready_task[run_task->tsklevel] =
 	    add_tcb_list(ready_task[run_task->tsklevel], run_task);
@@ -766,7 +766,7 @@ ER task_switch2(BOOL save_nowtask)
 	return (E_NOEXS);
     }
 
-    /* ���򤷤��������������������ʤ�С����⤷�ʤ������ */
+    /* 選択したタスクが、現タスクならば、何もしないで戻る */
     if (run_task == ready_task[tskid]) {
 #ifdef TSKSW_DEBUG
 	printk("task is non new.\n");	/* */
@@ -779,7 +779,7 @@ ER task_switch2(BOOL save_nowtask)
     printk("new task is %d\n", tskid);	/* */
 #endif
 
-    /* ���򤷤���������ready_task ���塼����Ϥ��� */
+    /* 選択したタスクをready_task キューからはずす */
     tcb = ready_task[tskid];
     if (tcb->tskstat != TTS_RDY) {
 	ena_int();
@@ -793,7 +793,7 @@ ER task_switch2(BOOL save_nowtask)
 #ifdef TSKSW_DEBUG
     printk("task_switch(): new task (ID = %d)\n", tcb->tskid);
 #endif
-/* resume ��ƤӽФ���resume �ΰ����ϡ�TSS �ؤΥ��쥯�� */
+/* resume を呼び出す。resume の引数は、TSS へのセレクタ */
 #ifdef TSKSW_DEBUG
     printk("resume (0x%x)\n", ((tcb->tskid + TSS_BASE) << 3) & 0xfff8);
 #endif
@@ -801,7 +801,7 @@ ER task_switch2(BOOL save_nowtask)
     ena_int();
     resume((UW) (tcb->tskid + TSS_BASE) << 3);
 /*  print_context (((tcb->tskid + TSS_BASE) << 3) & 0xfff8); */
-    return (E_OK);		/* ����˽�λ���������Υ����������å��λ��ˤ�������� */
+    return (E_OK);		/* 正常に終了した：次のタスクスイッチの時にここに戻る */
 }
 #endif				/* task_switch2 */
 
@@ -830,23 +830,23 @@ void print_context(UW selector)
 
 /* cre_tsk --- create task.
  *
- * ��������1���������롣
- * ���������������ϡ�TTS_DMT ���֤Ȥʤꡢsta_tsk()��¹Ԥ���ޤǤ�
- * �ºݤ�ư�����ȤϤʤ���
+ * タスクを1つ生成する。
+ * 生成したタスクは、TTS_DMT 状態となり、sta_tsk()を実行するまでは
+ * 実際に動くことはない。
  *
  *
- * ����: tskid 		�������륿������ID
- *	 pk_ctsk	�������륿������°������
- *			tskatr		������°��
- *			startaddr	��������ư���ɥ쥹
- *			itskpri		��������ư��ͥ����
- *			stksz		�����å�������
- *			addrmap		���ɥ쥹�ޥå�
+ * 引数: tskid 		生成するタスクのID
+ *	 pk_ctsk	生成するタスクの属性情報
+ *			tskatr		タスク属性
+ *			startaddr	タスク起動アドレス
+ *			itskpri		タスク起動時優先度
+ *			stksz		スタックサイズ
+ *			addrmap		アドレスマップ
  *
- * �֤��͡�	���顼�ֹ�
- *		E_OK	���ｪλ
- *		E_ID	�������� ID �ֹ椬����
- *		E_OBJ	Ʊ��Υ�������¸�ߤ��Ƥ���
+ * 返り値：	エラー番号
+ *		E_OK	正常終了
+ *		E_ID	タスクの ID 番号が不正
+ *		E_OBJ	同一のタスクが存在している
  *
  */
 ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
@@ -854,18 +854,18 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     T_TCB *newtask;
     W i;
 
-/* ������ ID ���ϰϥ����å� */
+/* タスク ID の範囲チェック */
     if ((tskid < MIN_TSKID) || (tskid > MAX_TSKID)) {
 	return (E_ID);
     }
-/* Ʊ�� ID �Υ�������¸�ߤ��Ƥ��뤫�ɤ����Υ����å� */
+/* 同一 ID のタスクが存在しているかどうかのチェック */
     if (task[tskid].tskstat != TTS_NON) {
 	return (E_OBJ);
     }
 
     newtask = &task[tskid];
     bzero(newtask, sizeof(T_TCB));
-/* ���������� */
+/* タスク生成 */
 
     newtask->tskid = tskid;
     newtask->tskstat = TTS_DMT;
@@ -875,9 +875,9 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
 	return (E_NOMEM);
     }
 
-    /* ���ۥ���Υޥåԥ󥰥ơ��֥����� pk_ctsk �λ��ꤷ���ޥåפ�
-     * �ѹ����롣
-     * ���꤬�ʤ��Ȥ��ˤϡ������ȥץ�������Ʊ���ޥåפȤʤ롣
+    /* 仮想メモリのマッピングテーブルを引数 pk_ctsk の指定したマップに
+     * 変更する。
+     * 指定がないときには、カレントプロセスと同じマップとなる。
      */
     if (pk_ctsk->addrmap != NULL) {
 	newtask->context.cr3 = (UW) (pk_ctsk->addrmap);
@@ -889,7 +889,7 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
 */
     }
 
-    /* �������Υ꡼�����ơ��֥������
+    /* タスクのリージョンテーブルを初期化
      */
     for (i = 0; i < MAX_REGION; i++) {
 	newtask->regions[i].permission = 0;
@@ -903,15 +903,15 @@ ER cre_tsk(ID tskid, T_CTSK * pk_ctsk)
     return (E_OK);
 }
 
-/* del_tsk --- �������κ��
+/* del_tsk --- タスクの削除
  * 
- * ����tskid�ǻ��ꤷ���������������롣
+ * 引数tskidで指定したタスクを削除する。
  *
- * ������
- *	tskid	������륿������ ID
+ * 引数：
+ *	tskid	削除するタスクの ID
  *
- * ����͡�
- *	E_OK	���ｪλ
+ * 戻り値：
+ *	E_OK	正常終了
  */
 ER del_tsk(ID tskid)
 {
@@ -923,27 +923,27 @@ ER del_tsk(ID tskid)
     } else if (task[tskid].tskstat != TTS_DMT) {
 	return (E_OBJ);
     }
-    /* �ޥåԥ󥰥ơ��֥��������� */
+    /* マッピングテーブルを解放する */
     release_vmap((ADDR_MAP) task[tskid].context.cr3);
 
-    /* kernel �ΰ�� stack �������� */
+    /* kernel 領域の stack を開放する */
     pfree((VP) VTOR((UW) task[tskid].stackptr0), PAGES(task[tskid].stksz0));
 
     task[tskid].tskstat = TTS_NON;
     return (E_OK);
 }
 
-/* sta_tsk --- �������ε�ư
+/* sta_tsk --- タスクの起動
  * 
- * ����tskid�ǻ��ꤷ����������ư���롣
- * ���ꤷ���������ϡ�cre_tsk ����������Ƥ���ɬ�פ����롣
+ * 引数tskidで指定したタスクを起動する。
+ * 指定したタスクは、cre_tsk で生成されている必要がある。
  *
- * ������
- *	tskid	��ư���륿������ ID
- *	stacd	��������ư������
+ * 引数：
+ *	tskid	起動するタスクの ID
+ *	stacd	タスク起動コード
  *
- * ����͡�
- *	E_OK	���ｪλ
+ * 戻り値：
+ *	E_OK	正常終了
  *
  */
 ER sta_tsk(ID tskid, INT stacd)
@@ -984,26 +984,26 @@ ER sta_tsk(ID tskid, INT stacd)
 }
 
 /******************************************************************************
- * ext_tsk --- ����������λ
+ * ext_tsk --- 自タスク終了
  *
- * run_task �ˤĤʤ���Ƥ��륿������ TTS_DMT ���֤ذ�ư���롣
- * ����񸻤ʤɤ��ֵѤ��ʤ���
+ * run_task につながれているタスクを TTS_DMT 状態へ移動する。
+ * メモリ資源などは返却しない。
  * 
- * ������	�ʤ�
+ * 引数：	なし
  *
- * �֤��͡�	�ʤ�
+ * 返り値：	なし
  *
- * ��		���Υ����ƥॳ�����¹Ԥ������Ȥϡ���ȤΥ���ƥ�����
- *		�ˤ����ʤ���
+ * ！		このシステムコールを実行したあとは、もとのコンテキスト
+ *		には戻らない。
  *
- * �������ơ�
- *	���δؿ��Ǥϡ�ready ���������塼�ˤĤʤ���Ƥ��륿�����Τ�����
- *	�Ǥ�ͥ���٤ι⤤��Τ����򤷡����˼¹Ԥ��륿�����Ȥ��롣
- *	(���򤹤륿�������ʤ��Ȥ������ȤϤʤ���--- ɬ�����Ԥ��Ƥ��� 
- *	idle �����������뤿��)
- *	switch_task() �Ǥϡ������Ԥ��Ƥ륿������ready���������塼����
- *	��롣��������ext_tsk() �Ǥϡ����Υ������Ͻ�λ���뤿�ᡢready
- *	���������塼�ˤ����줺�����֤�TTS_DMT�ˤ��롣
+ * 処理内容：
+ *	この関数では、ready タスクキューにつながれているタスクのうち、
+ *	最も優先度の高いものを選択し、次に実行するタスクとする。
+ *	(選択するタスクがないということはない。--- 必ず走行している 
+ *	idle タスクがあるため)
+ *	switch_task() では、今走行してるタスクをreadyタスクキューに入
+ *	れる。しかし、ext_tsk() では、元のタスクは終了するため、ready
+ *	タスクキューには入れず、状態をTTS_DMTにする。
  */
 void ext_tsk(void)
 {
@@ -1012,35 +1012,35 @@ void ext_tsk(void)
     ID tskid;
 #endif
 
-    /* ���ߤΥ������� TTS_DMT ���֤ˤ������򤷤��������򼡤����餻��褦 */
-    /* �ˤ��롣                                                          */
+    /* 現在のタスクを TTS_DMT 状態にし、選択したタスクを次に走らせるよう */
+    /* にする。                                                          */
     dis_int();
     run_task->tskstat = TTS_DMT;
     task_switch(FALSE);
 }
 
 /******************************************************************************
- * exd_tsk --- ����������λ�Ⱥ��
+ * exd_tsk --- 自タスク終了と削除
  *
- * run_task �ˤĤʤ���Ƥ��륿������ TTS_NON ���֤ذ�ư���롣
- * ����񸻤ʤɤ��ֵѤ��ʤ������ޥåԥ󥰤��줿����ˤĤ��Ƥϡ���
- * �����롣
+ * run_task につながれているタスクを TTS_NON 状態へ移動する。
+ * メモリ資源などは返却しないが、マッピングされたメモリについては、解
+ * 放する。
  * 
- * ������	�ʤ�
+ * 引数：	なし
  *
- * �֤��͡�	�ʤ�
+ * 返り値：	なし
  *
- * ��		���Υ����ƥॳ�����¹Ԥ������Ȥϡ���ȤΥ���ƥ�����
- *		�ˤ����ʤ���
+ * ！		このシステムコールを実行したあとは、もとのコンテキスト
+ *		には戻らない。
  *
- * �������ơ�
- *	���δؿ��Ǥϡ�ready ���������塼�ˤĤʤ���Ƥ��륿�����Τ�����
- *	�Ǥ�ͥ���٤ι⤤��Τ����򤷡����˼¹Ԥ��륿�����Ȥ��롣
- *	(���򤹤륿�������ʤ��Ȥ������ȤϤʤ���--- ɬ�����Ԥ��Ƥ��� 
- *	idle �����������뤿��)
- *	switch_task() �Ǥϡ������Ԥ��Ƥ륿������ready���������塼����
- *	��롣��������ext_tsk() �Ǥϡ����Υ������Ͻ�λ���뤿�ᡢready
- *	���������塼�ˤ����줺�����֤�TTS_DMT�ˤ��롣
+ * 処理内容：
+ *	この関数では、ready タスクキューにつながれているタスクのうち、
+ *	最も優先度の高いものを選択し、次に実行するタスクとする。
+ *	(選択するタスクがないということはない。--- 必ず走行している 
+ *	idle タスクがあるため)
+ *	switch_task() では、今走行してるタスクをreadyタスクキューに入
+ *	れる。しかし、ext_tsk() では、元のタスクは終了するため、ready
+ *	タスクキューには入れず、状態をTTS_DMTにする。
  */
 void exd_tsk(void)
 {
@@ -1049,11 +1049,11 @@ void exd_tsk(void)
     ID tskid;
 #endif
 
-    /* ���ߤΥ������� TTS_NON ���֤ˤ������򤷤��������򼡤����餻��褦�ˤ��롣 */
-    /* �ޥåԥ󥰥ơ��֥��������� */
+    /* 現在のタスクを TTS_NON 状態にし、選択したタスクを次に走らせるようにする。 */
+    /* マッピングテーブルを解放する */
     release_vmap((ADDR_MAP) run_task->context.cr3);
 
-    /* kernel �ΰ�� stack �������� */
+    /* kernel 領域の stack を開放する */
     pfree((VP) VTOR((UW) run_task->stackptr0), PAGES(run_task->stksz0));
 
     dis_int();
@@ -1062,33 +1062,33 @@ void exd_tsk(void)
 }
 
 /*************************************************************************
- * ter_tsk --- ¾������������λ
+ * ter_tsk --- 他タスク強制終了
  *
- * ��ǽ��
- *	�����ǻ��ꤷ������������Ū�˽�λ�����롣
- *	��λ���륿�����Τ�äƤ���񸻤ϲ������ʤ���
- *	�����������Υ����ƥॳ����ˤ�äƽ�λ�����������ϡ�TTS_DMT ��
- *	�֤ˤʤä������ʤΤǡ�sta_tsk �����ƥॳ����ˤ�äƺƳ�����
- *	���Ȥ��Ǥ��롣
+ * 機能：
+ *	引数で指定したタスクを強制的に終了させる。
+ *	終了するタスクのもっている資源は解放しない。
+ *	ただし、このシステムコールによって終了したタスクは、TTS_DMT 状
+ *	態になっただけなので、sta_tsk システムコールによって再開する
+ *	ことができる。
  */
 ER ter_tsk(ID tskid)
 {
     switch (task[tskid].tskstat) {
-    case TTS_RUN:		/* ���������ξ�� */
+    case TTS_RUN:		/* 自タスクの場合 */
 	if (run_task->tskid == tskid)
 	    return (E_OBJ);
 
-	/* ready ���֤ˤ��륿�����ξ�硧������λ������ */
+	/* ready 状態にあるタスクの場合：強制終了させる */
     case TTS_RDY:
 	dis_int();
 	task[tskid].tskstat = TTS_DMT;
-	/* ��ǥ����塼������ */
+	/* レディキューから削除 */
 	ready_task[task[tskid].tsklevel]
 	    = del_tcb_list(ready_task[task[tskid].tsklevel], &task[tskid]);
 	ena_int();
 	break;
 
-	/* �Ԥ����֤ˤ��륿�����ξ�硧�Ԥ����֤���������Ƥ��鶯����λ�����롣 */
+	/* 待ち状態にあるタスクの場合：待ち状態から解放してから強制終了させる。 */
     case TTS_WAI:
 	if (task[tskid].tskwait.msg_wait)
 	    del_task_mbf(tskid);
@@ -1134,7 +1134,7 @@ ER ena_dsp()
     return (E_OK);
 }
 
-/* chg_pri --- �ץ饤����ƥ����ѹ�
+/* chg_pri --- プライオリティの変更
  *
  */
 ER chg_pri(ID tskid, PRI tskpri)
@@ -1171,7 +1171,7 @@ ER chg_pri(ID tskid, PRI tskpri)
     return (E_OK);
 }
 
-/* rot_rdq --- Ʊ��ץ饤����ƥ��ǤΥ������ν�����ѹ�����
+/* rot_rdq --- 同一プライオリティでのタスクの順序を変更する
  *
  */
 ER rot_rdq(PRI tskpri)
@@ -1195,13 +1195,13 @@ ER rot_rdq(PRI tskpri)
 #endif
     }
     ena_int();
-    /* �����������å��ˤ��¹Ը�������: ɬ��̵���Τ��� */
+    /* タスクスイッチによる実行権の放棄: 必要無いのかも */
     task_switch(TRUE);
     return (E_OK);
 }
 
 /*
- * rel_wai --- �Ԥ����֤β��
+ * rel_wai --- 待ち状態の解除
  */
 ER rel_wai(ID tskid)
 {
@@ -1249,7 +1249,7 @@ ER rel_wai(ID tskid)
 }
 
 /***********************************************************************************
- * get_tid --- ���������Υ����� ID ����
+ * get_tid --- 自タスクのタスク ID 参照
  *
  *
  */
@@ -1260,9 +1260,9 @@ ER get_tid(ID * p_tskid)
 }
 
 /***********************************************************************************
- * ref_tsk --- ���������֤λ���
+ * ref_tsk --- タスク状態の参照
  *
- * ���������֤��֤���
+ * タスク状態を返す。
  *
  */
 ER ref_tsk(T_RTSK * pk_rtsk, ID tskid)
@@ -1283,10 +1283,10 @@ ER ref_tsk(T_RTSK * pk_rtsk, ID tskid)
 }
 
 /*********************************************************************************
- * slp_tsk --- �����������Ԥ����֤ˤ���
+ * slp_tsk --- 自タスクを待ち状態にする
  *
- *	��ʬ���Ȥ��Ԥ����֤ˤ��ơ�¾�Υ�������������Ϥ���
- *	�Ԥ��װ��ϡ����δؿ��Ǥϥ��åȤ��ʤ���
+ *	自分自身を待ち状態にして、他のタスクに制御を渡す。
+ *	待ち要因は、この関数ではセットしない。
  *
  */
 ER slp_tsk(void)
@@ -1308,17 +1308,17 @@ ER slp_tsk(void)
     run_task->slp_time = system_ticks;
     run_task->slp_err = E_OK;
     run_task->tskstat = TTS_WAI;
-    task_switch(FALSE);		/* run_task �� ready_task ���塼����¸���ʤ� */
+    task_switch(FALSE);		/* run_task を ready_task キューに保存しない */
     return (run_task->slp_err);
 }
 
 /*********************************************************************************
- * wup_tsk --- ���ꤵ�줿�������򵯾����롣
+ * wup_tsk --- 指定されたタスクを起床する。
  *
- * ��ǽ��
- * 	�Ԥ����֥ե饰(tskwai)�ϡ����δؿ���ƤӽФ����˥ꥻ�åȤ��Ƥ��ʤ����
- *	�����ʤ���
- * 	�⤷�Ԥ����֥ե饰�����åȤ���Ƥ����ʤ�С�E_OBJ �Υ��顼�Ȥʤ롣
+ * 機能：
+ * 	待ち状態フラグ(tskwai)は、この関数を呼び出す時にリセットしていなければ
+ *	いけない。
+ * 	もし待ち状態フラグがセットされていたならば、E_OBJ のエラーとなる。
  * 
  */
 ER wup_tsk(ID taskid)
@@ -1339,7 +1339,7 @@ ER wup_tsk(ID taskid)
 	return (E_OBJ);
     }
 
-    /* ���٤Ƥ��Ԥ����֤��������Ƥ��ʤ���С���ˤϿʤޤʤ� */
+    /* すべての待ち状態が解除されていなければ、先には進まない */
     if ((p->tskwait.time_wait) || (p->tskwait.semaph_wait)
 	|| (p->tskwait.event_wait) || (p->tskwait.msg_wait)) {
 	printk("task %d is waiting. abort wakeup.\n", p->tskid);
@@ -1359,14 +1359,14 @@ ER wup_tsk(ID taskid)
 	if (p->quantum > 0)
 	    p->quantum = QUANTUM;
 	if (((UW) p < MIN_KERNEL) || ((UW) p >= 0x81000000)) {
-	  /* kernel �ץ������ξ�¤�Ŭ�� */
+	  /* kernel プロセスの上限は適当 */
 #ifdef TSKSW_DEBUG
 	    printk("wup_tsk: error on tasklist\n");
 #endif
 	    print_task_list();
 	    falldown("kernel: task.\n");
 	} else {
-	    /* ready queue ���������ɲ� */
+	    /* ready queue の末尾に追加 */
 #ifdef notdef
 	    if (taskid == 23) {
 		printk("wup_tsk add %d on %d (%d)\n",
@@ -1394,15 +1394,15 @@ ER wup_tsk(ID taskid)
 }
 
 /*****************************************************************************
- * sus_tsk --- ���ꤷ�������������Ԥ����֤˰ܹ�
+ * sus_tsk --- 指定したタスクを強制待ち状態に移行
  *
- * ������
- *	taskid --- suspend ���륿������ ID
+ * 引数：
+ *	taskid --- suspend するタスクの ID
  *
- * �֤��͡�
+ * 返り値：
  *
  *
- * ��ǽ��
+ * 機能：
  *
  */
 ER sus_tsk(ID taskid)
@@ -1454,26 +1454,26 @@ ER sus_tsk(ID taskid)
 }
 
 /******************************************************************************************
- * rsm_tsk --- �����Ԥ����֤Υ����������Ԥ����֤���
+ * rsm_tsk --- 強制待ち状態のタスクから待ち状態を解除
  *
- * ������
- *	taskid --- suspend ���Ƥ��륿������ ID
+ * 引数：
+ *	taskid --- suspend しているタスクの ID
  *
  *
- * �֤��͡�
- *	���Υ��顼�ֹ椬�֤�
+ * 返り値：
+ *	次のエラー番号が返る
  *	
- * E_OK     �����ƥॳ���������˽�λ����
- * E_ID     ������ ID ������
- * E_NOEXS  ��������¸�ߤ��ʤ�(TTS_NON ����)
- * E_OBJ    �������ξ��֤�����(TTS_SUS, TTS_WAS, TTS_NON �ʳ�)
+ * E_OK     システムコールは正常に終了した
+ * E_ID     タスク ID が不正
+ * E_NOEXS  タスクが存在しない(TTS_NON 状態)
+ * E_OBJ    タスクの状態が不正(TTS_SUS, TTS_WAS, TTS_NON 以外)
  *
  *
- * ��ǽ��
- *	�Ԥ����֤ˤ��륿�������Ԥ����֤��鶯��Ū�˲�����롣
+ * 機能：
+ *	待ち状態にあるタスクを待ち状態から強制的に解除する。
  *
- *	�Ԥ����֤�¿�Ťˤʤ뤳�Ȥ����뤬�����Υ����ƥॳ����ϡ��ҤȤĤ����Ԥ�
- *	�������롣
+ *	待ち状態は多重になることがあるが、このシステムコールは、ひとつだけ待ち
+ *	を解除する。
  */
 ER rsm_tsk(ID taskid)
 {
@@ -1515,15 +1515,15 @@ ER rsm_tsk(ID taskid)
 }
 
 /******************************************************************************
- * frsm_tsk --- �����Ԥ����֤Υ����������Ԥ����֤���(¿�Ť��Ԥ�������)
+ * frsm_tsk --- 強制待ち状態のタスクから待ち状態を解除(多重の待ち状態用)
  *
- * ������
- *	taskid --- suspend ���륿������ ID
+ * 引数：
+ *	taskid --- suspend するタスクの ID
  *
- * �֤��͡�
- *	���顼�ֹ�
+ * 返り値：
+ *	エラー番号
  *
- * ��ǽ��
+ * 機能：
  *
  */
 ER frsm_tsk(ID taskid)
@@ -1560,15 +1560,15 @@ ER frsm_tsk(ID taskid)
 }
 
 /******************************************************************************************
- * can_wup --- �������ε����׵��̵����
+ * can_wup --- タスクの起床要求を無効化
  *
- * ������
- *	taskid --- �������� ID
+ * 引数：
+ *	taskid --- タスクの ID
  *
- * �֤��͡�
- *	���顼�ֹ�
+ * 返り値：
+ *	エラー番号
  *
- * ��ǽ��
+ * 機能：
  *
  */
 ER can_wup(INT * p_wupcnt, ID taskid)
@@ -1598,26 +1598,26 @@ ER can_wup(INT * p_wupcnt, ID taskid)
 
 
 /***********************************************************************
- * new_task --- Ǥ�դΥ����� ID �ǤΥ���������
+ * new_task --- 任意のタスク ID でのタスク生成
  *
- * ������
- *	pk_ctsk	�������륿������°������
- *		tskatr		������°��
- *		startaddr	��������ư���ɥ쥹 (run_flag == TRUE �ΤȤ�)
- *		itskpri		��������ư��ͥ����
- *		stksz		�����å�������
- *		addrmap		���ɥ쥹�ޥå�
- *	rid	���������������� ID (�֤���)
- *	run_flag  ����������������¹Ԥ���
+ * 引数：
+ *	pk_ctsk	生成するタスクの属性情報
+ *		tskatr		タスク属性
+ *		startaddr	タスク起動アドレス (run_flag == TRUE のとき)
+ *		itskpri		タスク起動時優先度
+ *		stksz		スタックサイズ
+ *		addrmap		アドレスマップ
+ *	rid	生成したタスクの ID (返り値)
+ *	run_flag  生成したタスクを実行する
  *
- * �֤��͡�
- *	���顼�ֹ�
- *	E_OK	���ｪλ
+ * 返り値：
+ *	エラー番号
+ *	E_OK	正常終了
  *
- * ��ǽ��
- *	new_task �ϡ����������������������Ȥ��� cre_tsk �ȤۤȤ��
- *	Ʊ����ǽ���ġ���������cre_tsk �������� ID ��ɬ�פȤ���Τ���
- *	����new_task �ϡ������� ID ��ưŪ�˳�ꤢ�Ƥ롣
+ * 機能：
+ *	new_task は、新しいタスクを作成するという cre_tsk とほとんど
+ *	同じ機能をもつ。ただし、cre_tsk がタスク ID を必要とするのに対
+ *	し、new_task は、タスク ID を自動的に割りあてる。
  *
  */
 ER new_task(T_CTSK * pk_ctsk, ID * rid, BOOL run_flag)
@@ -1655,10 +1655,10 @@ void make_local_stack(T_TCB * tsk, W size, W acc)
 {
     W err;
 
-    /* task �� kernel stack �ΰ���ø���٥� 0 �Υ����å������� */
+    /* task の kernel stack 領域を特権レベル 0 のスタックに設定 */
     tsk->context.esp0 = tsk->initial_stack;
 
-    /* stack region �κ��� number �� 4 �Ǹ��� */
+    /* stack region の作成 number は 4 で固定 */
     /* VM_READ, VM_WRITE, VM_USER) is originally defined in posix_mm.h */
 #define VM_READ		0x00000001
 #define VM_WRITE	0x00000002
@@ -1667,7 +1667,7 @@ void make_local_stack(T_TCB * tsk, W size, W acc)
 	     (VP) VADDR_STACK_HEAD, STD_STACK_SIZE, STD_STACK_SIZE,
 	     (VM_READ | VM_WRITE | VM_USER), NULL);
 
-    /* ʪ������γ������ */
+    /* 物理メモリの割り当て */
     tsk->stackptr = (VP) (VADDR_STACK_TAIL - size);
     tsk->stksz = size;
     tsk->initial_stack = VADDR_STACK_TAIL;
@@ -1695,7 +1695,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     src_tsk = &task[src];
     dst_tsk = &task[dst];
 
-    /* dst task �˿����������å��ݥ��󥿤����դ��� */
+    /* dst task に新しいスタックポインタを割り付ける */
     make_local_stack(dst_tsk, POSIX_STACK_SIZE, ACC_USER);
 
     size = ((UW) src_tsk->stackptr) + src_tsk->stksz - ebp;
@@ -1706,7 +1706,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     dstp = ((UW) dst_tsk->stackptr) + dst_tsk->stksz - size;
     dst_tsk->context.esp = dstp;
 
-    /* src task �Υ����å������Ƥ� dst task �˥��ԡ� */
+    /* src task のスタックの内容を dst task にコピー */
     srcp = (UW) src_tsk->initial_stack;
     dstp = (UW) dst_tsk->initial_stack;
     while(size >= PAGE_SIZE) {
@@ -1726,7 +1726,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
 	   dst_tsk->context.esp, dst_tsk->context.ebp);
 #endif
 
-    /* �쥸�����Υ��ԡ� */
+    /* レジスタのコピー */
 #ifdef I386
     dst_tsk->context.ebx = ebx;
     dst_tsk->context.ecx = ecx;
@@ -1734,7 +1734,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     dst_tsk->context.esi = esi;
     dst_tsk->context.edi = edi;
 
-    /* ���쥯�������� */
+    /* セレクタの設定 */
     dst_tsk->context.cs = USER_CSEG | USER_DPL;
     dst_tsk->context.ds = USER_DSEG;
     dst_tsk->context.es = USER_DSEG;
@@ -1742,7 +1742,7 @@ ER vcpy_stk(ID src, W esp, W ebp, W ebx, W ecx, W edx, W esi, W edi, ID dst)
     dst_tsk->context.gs = USER_DSEG;
     dst_tsk->context.ss = USER_SSEG | USER_DPL;
 
-    /* FPU ����Υ��ԡ� */
+    /* FPU 情報のコピー */
     dst_tsk->use_fpu = src_tsk->use_fpu;
 #if 0
     printk("ebx = %x ecx = %x edx = %x esi = %x edi = %x\n",
@@ -1826,10 +1826,10 @@ static void print_rdq(int level)
 /* default page fault handler */
 W pf_handler(W cr2, W eip)
 {
-    /* KERNEL_TASK �ؤ���Ͽ */
+    /* KERNEL_TASK への登録 */
     /* type = POSIX, id = pid */
     add_trmtbl(0, run_task->tskid, (LOWLIB_DATA)->my_pid);
-    /* KERNEL_TASK ��ͥ�����ѹ� */
+    /* KERNEL_TASK の優先度変更 */
     chg_pri(KERNEL_TASK, MID_LEVEL);
     return (E_OK);
 }
@@ -1850,14 +1850,14 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk = &task[tid];
 
 #ifdef notdef
-    /* �����Υ����ɤ�����������ᤷ�Ƥ�ư��ʤ� */
+    /* 以前のコードだが，これに戻しても動作しない */
     tsk->context.esp = tsk->initial_stack;
     tsk->context.ebp = tsk->initial_stack;
 #else
-    /* stack frame �κ����� */
-    /* stack �Υ������� PAGE_SIZE (4KB) ��ۤ�������꤬ȯ�������ǽ������ */
-    /* ������б�����ˤ� palloc �ǳ�����Ƥ������ stack frame ������� */
-    /* vput_reg ���� */
+    /* stack frame の作成． */
+    /* stack のサイズが PAGE_SIZE (4KB) を越えると問題が発生する可能性あり */
+    /* これに対応するには palloc で割り当てたメモリに stack frame を作成し */
+    /* vput_reg する */
     if (stsize >= PAGE_SIZE) {
 	printk("[ITRON] WARNING vset_ctx: stack size is too large\n");
     }
@@ -1891,7 +1891,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->context.ebp = (UW) esp;
 #endif
 
-    /* �쥸�������ν���� */
+    /* レジスターの初期化 */
 #ifdef I386
     tsk->context.eip = eip;
 
@@ -1904,7 +1904,7 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->context.edi = 0;
     tsk->context.t = 0;
 
-    /* ���쥯�������� */
+    /* セレクタの設定 */
     tsk->context.cs = USER_CSEG | USER_DPL;
     tsk->context.ds = USER_DSEG;
     tsk->context.es = USER_DSEG;
@@ -1913,16 +1913,16 @@ ER vset_ctx(ID tid, W eip, B * stackp, W stsize)
     tsk->context.ss = USER_SSEG | USER_DPL;
 #endif
 
-    /* �������ν���� */
+    /* タスクの初期化 */
     tsk->tskwait.time_wait = 0;
     tsk->tskwait.semaph_wait = 0;
     tsk->tskwait.event_wait = 0;
     tsk->tskwait.msg_wait = 0;
 
-    /* page fault handler ����Ͽ */
+    /* page fault handler の登録 */
     tsk->page_fault_handler = pf_handler;
 
-    /* quantum ������ */
+    /* quantum の設定 */
     tsk->quantum = QUANTUM;
     ena_int();
 
