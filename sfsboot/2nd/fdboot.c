@@ -21,27 +21,13 @@
  */
 int boot_func(char *argv[])
 {
-    char tmp[BLOCK_SIZE];
-    extern int read_multi_module();
-
-    boot_printf("booting kernel...\n");
-    init_fd();
-    fd_reset();
-    on_motor(0);
-    fd_recalibrate(0);
-    boot_printf("exec data read...\n");
-    fd_read(0, 0, 0, tmp, 2);
-    boot_printf("magic number %d\n", tmp[0]);
-    if (tmp[0] == 0x0001) {
-	boot_printf("read multiple module.\n");
-	read_multi_module();
-	boot_printf("boot end\n");
-    } else {
-	boot_printf("a.out module is not supported.\n");
-    }
-
-    stop_motor(0);
-    return E_OK;
+    extern int boot_btron(char **av);
+    char *args[4];
+    args[0] = "boot";
+    args[1] = "fd";
+    args[2] = "0";
+    args[3] = NULL;
+    return boot_btron(args);
 }
 
 /*

@@ -193,12 +193,19 @@ fd_recalibrate (BYTE drive)
 {
   BYTE cbuff[2];
   
+  boot_printf ("fd_recalibrate...\n");
   cbuff[0] = FDC_RECALIBRATE;                   /* リキャリブレート */ 
   cbuff[1] = drive;
   intr_flag = FALSE;	                        /* 割り込み待ち */
-  write_commands(2, cbuff);
+  boot_printf ("wc...\n");
+  if (!write_commands(2, cbuff)) {
+    boot_printf ("write_commands failed!\n");
+  }
+  boot_printf ("wait_int...\n");
   wait_int (&intr_flag);               
+  boot_printf ("isense...\n");
   fdc_isense ();                                /* 実行結果の受取 */
+  boot_printf ("fd_recalibrate done.\n");
 
   return (fd_status.status_data[0]);
 }
@@ -220,6 +227,7 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
     recalibrate_flag = TRUE;
   }
 
+  boot_printf ("fd_seek: cyl %d, head %d\n", cylinder, head);
   cbuff[0] = FDC_SEEK;                          /* シーク */
   cbuff[1] = (head << 2) | (drive & 0x03);
   cbuff[2] = cylinder;
@@ -227,6 +235,7 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
   write_commands(3, cbuff);
   wait_int (&intr_flag);
   fdc_isense ();                                /* 実行結果の受取 */
+  boot_printf ("fd_seek done.\n");
 
   result = TRUE;
   if ((fd_status.status_data[0] & 0xF8) != 0x20) 
@@ -248,12 +257,10 @@ fdc_isense (void)
 {
   int	result_nr = 0;
   int	status;
-  BYTE  cbuff[1];
 
-  cbuff[0] = FDC_SENSE;
-  write_commands(1, cbuff);
+  write_fdc (FDC_SENSE);
 
-  status = inb (FDC_STAT);
+  status = inb (FDC_STAT) & (FDC_MASTER | FDC_DIN | FDC_BUSY);
   for (;;)
     {
       if (status == (FDC_MASTER | FDC_DIN | FDC_BUSY)) 
