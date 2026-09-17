@@ -233,7 +233,7 @@ extern W    	read_ide();	/* 読み込み		*/
 extern W    	write_ide();	/* 書き込み		*/
 extern W    	control_ide();	/* コントロール		*/
 extern W    	status_ide();	/* ステータス		*/
-extern W	ide_intr_flag;
+extern volatile W	ide_intr_flag;
 extern ER	read_partition (W drive);
 
 extern void	intr_ide ();

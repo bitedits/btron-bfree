@@ -28,6 +28,29 @@ fd-image: mksfs statfs
 	./statfs fd_boot.bin mkdir /system
 	./statfs fd_boot.bin write /system/2ndboot ../../../sfsboot/2nd/2ndboot
 	./statfs fd_boot.bin write /system/btron386 ../../../kernel/BTRON/make/btron
+	./statfs fd_boot.bin write /system/wconsole ../../POSIX/servers/wconsole/wconsole
+	./statfs fd_boot.bin chmod 755 /system/wconsole
+	./statfs fd_boot.bin write /system/ramdisk ../../POSIX/servers/ramdisk/ramdisk
+	./statfs fd_boot.bin chmod 755 /system/ramdisk
+	./statfs fd_boot.bin mkdir /dev
+	./statfs fd_boot.bin mknod /dev/console 0x00000000
+	./statfs fd_boot.bin mknod /dev/win1 0x00000001
+	./statfs fd_boot.bin mknod /dev/win2 0x00000002
+	./statfs fd_boot.bin mknod /dev/keyboard 0x00010000
+	./statfs fd_boot.bin mknod /dev/psaux 0x00020000
+	./statfs fd_boot.bin mknod /dev/fd 0x80000000
+	./statfs fd_boot.bin mknod /dev/ide0 0x80010000
+	./statfs fd_boot.bin mknod /dev/ide1 0x80010001
+	./statfs fd_boot.bin mknod /dev/ide2 0x80010002
+	./statfs fd_boot.bin mknod /dev/ide3 0x80010003
+	./statfs fd_boot.bin mknod /dev/ide4 0x80010004
+	./statfs fd_boot.bin mknod /dev/ide5 0x80010005
+	./statfs fd_boot.bin mknod /dev/ide6 0x80010006
+	./statfs fd_boot.bin mknod /dev/ide7 0x80010007
+	./statfs fd_boot.bin mknod /dev/ide8 0x80010008
+	./statfs fd_boot.bin mknod /dev/ide9 0x80010009
+	./statfs fd_boot.bin mknod /dev/rd 0x80020000
+	./statfs fd_boot.bin write /init.fm init.fm
 	../../../sfsboot/mkmap fd_boot.bin /system/2ndboot | ../../../sfsboot/mkboot fd_boot.bin
 	python3 -c "with open('fd_boot.bin', 'ab') as f: f.truncate(1474560)"
 	@echo "==> fd_boot.bin created (1474560 bytes)."
@@ -41,6 +64,29 @@ hd-image: mksfs statfs fd-image
 	./statfs hd_boot.bin mkdir /system
 	./statfs hd_boot.bin write /system/2ndboot ../../../sfsboot/2nd/2ndboot
 	./statfs hd_boot.bin write /system/btron386 ../../../kernel/BTRON/make/btron
+	./statfs hd_boot.bin write /system/wconsole ../../POSIX/servers/wconsole/wconsole
+	./statfs hd_boot.bin chmod 755 /system/wconsole
+	./statfs hd_boot.bin write /system/ramdisk ../../POSIX/servers/ramdisk/ramdisk
+	./statfs hd_boot.bin chmod 755 /system/ramdisk
+	./statfs hd_boot.bin mkdir /dev
+	./statfs hd_boot.bin mknod /dev/console 0x00000000
+	./statfs hd_boot.bin mknod /dev/win1 0x00000001
+	./statfs hd_boot.bin mknod /dev/win2 0x00000002
+	./statfs hd_boot.bin mknod /dev/keyboard 0x00010000
+	./statfs hd_boot.bin mknod /dev/psaux 0x00020000
+	./statfs hd_boot.bin mknod /dev/fd 0x80000000
+	./statfs hd_boot.bin mknod /dev/ide0 0x80010000
+	./statfs hd_boot.bin mknod /dev/ide1 0x80010001
+	./statfs hd_boot.bin mknod /dev/ide2 0x80010002
+	./statfs hd_boot.bin mknod /dev/ide3 0x80010003
+	./statfs hd_boot.bin mknod /dev/ide4 0x80010004
+	./statfs hd_boot.bin mknod /dev/ide5 0x80010005
+	./statfs hd_boot.bin mknod /dev/ide6 0x80010006
+	./statfs hd_boot.bin mknod /dev/ide7 0x80010007
+	./statfs hd_boot.bin mknod /dev/ide8 0x80010008
+	./statfs hd_boot.bin mknod /dev/ide9 0x80010009
+	./statfs hd_boot.bin mknod /dev/rd 0x80020000
+	./statfs hd_boot.bin write /init.fm init.fm
 	@echo "==> hd_boot.bin created."
 
 mksfs-e: mkfs.no $(NLIBS) $(NKERNLIBS)

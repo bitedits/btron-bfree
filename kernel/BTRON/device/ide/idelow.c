@@ -268,7 +268,7 @@ void ide_recalibrate(int drive)
 /**************************************************************************
  *
  */
-int wait_int(int *flag)
+int wait_int(volatile int *flag)
 {
     ena_int();
     while (*flag == FALSE);

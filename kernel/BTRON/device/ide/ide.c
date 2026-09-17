@@ -86,7 +86,7 @@ static char rcsid[] =
  *	 大域変数群の宣言
  *
  */
-W ide_intr_flag;
+volatile W ide_intr_flag;
 struct ide_id ide_spec[MAXIDE];
 struct ide_partition
  ide_partition[MAXIDE][IDE_MAX_PARTITION + IDE_MAX_EXT_PARTITION];

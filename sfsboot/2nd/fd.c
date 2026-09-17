@@ -234,7 +234,6 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
     recalibrate_flag = TRUE;
   }
 
-  boot_printf ("fd_seek: cyl %d, head %d\n", cylinder, head);
   cbuff[0] = FDC_SEEK;                          /* シーク */
   cbuff[1] = (head << 2) | (drive & 0x03);
   cbuff[2] = cylinder;
@@ -242,7 +241,6 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
   write_commands(3, cbuff);
   wait_int (&intr_flag);
   fdc_isense ();                                /* 実行結果の受取 */
-  boot_printf ("fd_seek done.\n");
 
   result = TRUE;
   if ((fd_status.status_data[0] & 0xF8) != 0x20) 
@@ -295,22 +293,24 @@ fdc_sense (void)
 {
   int	result_nr = 0;
   int	status;
+  int	i;
 
-  status = inb (FDC_STAT);
-  for (;;)
+  for (i = 0; i < 100000; i++)
     {
+      status = inb (FDC_STAT) & (FDC_MASTER | FDC_DIN | FDC_BUSY);
       if (status == (FDC_MASTER | FDC_DIN | FDC_BUSY)) 
 	{
-	  if (result_nr >= 8) 
-	    break;	/* too many results */
-	  fd_status.status_data[result_nr++] = inb (FDC_DATA);
+	  if (result_nr < 8) 
+	    fd_status.status_data[result_nr++] = inb (FDC_DATA);
+	  else
+	    inb (FDC_DATA);
 	}
-      status = inb (FDC_STAT) & (FDC_MASTER | FDC_DIN | FDC_BUSY);
-      if (status == FDC_MASTER) 
+      else if (result_nr > 0 && status == FDC_MASTER) 
 	{	/* all read */
 	  return (TRUE);
 	}
     }
+  boot_printf ("fdc_sense timeout: rnr=%d stat=%x\n", result_nr, inb (FDC_STAT));
   return (FALSE);
 }
 
@@ -345,14 +345,9 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     wait_int (&intr_flag);                                      /* 割り込み待ち */
 
     if(fdc_sense () == FALSE) {                                  /* エラーチェック */
-      boot_printf("sense fail C%d H%d S%d\n", cylinder, head, sector);
       continue;
     }
-    boot_printf("ST:%02x %02x %02x n:%d %d %d\n",
-      fd_status.status_data[0], fd_status.status_data[1],
-      fd_status.status_data[2], fd_status.status_data[3],
-      fd_status.status_data[4], fd_status.status_data[5]);
-    if ((fd_status.status_data[0] & 0xF8) != 0x00) 
+    if ((fd_status.status_data[0] & 0xC0) != 0x00) 
       continue;
     if ((fd_status.status_data[1] | fd_status.status_data[2]) != 0x00)
       continue;
@@ -361,7 +356,6 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
       + fd_status.status_data[4] * HD_SECTOR + fd_status.status_data[5];
     s = s - (cylinder * HD_HEAD * HD_SECTOR + head * HD_SECTOR + sector);
     if (s  != 1) {
-      boot_printf("scnt=%d\n", s);
       continue;
     }
     
@@ -390,7 +384,6 @@ fd_read (int drive, int part, int blockno, BYTE *buff, int length)
   int	readcount;
 
   on_motor (0);
-  boot_printf("fd_read: drive=%d blk=%d len=%d\n", drive, blockno, length);
 
   for (readcount = 0; readcount < length; readcount++) {
  
