@@ -19,8 +19,21 @@ statfs: statfs.o
 sfsck: sfsck.o
 	$(CC) $(CFLAGS) -o sfsck sfsck.o
 
+# Create a bootable 1.44M Floppy SFS image
+fd-image: mksfs statfs
+	@echo "==> Creating SFS Floppy boot image (1.44MB) ..."
+	rm -f fd_boot.bin
+	cp -f ../../../sfsboot/1st/1stboot fd_boot.bin
+	./mksfs fd_boot.bin 2880 512 12
+	./statfs fd_boot.bin mkdir /system
+	./statfs fd_boot.bin write /system/2ndboot ../../../sfsboot/2nd/2ndboot
+	./statfs fd_boot.bin write /system/btron386 ../../../kernel/BTRON/make/btron
+	../../../sfsboot/mkmap fd_boot.bin /system/2ndboot | ../../../sfsboot/mkboot fd_boot.bin
+	python3 -c "with open('fd_boot.bin', 'ab') as f: f.truncate(1474560)"
+	@echo "==> fd_boot.bin created (1474560 bytes)."
+
 # Create a bootable HDD SFS image (called by root Makefile 'make pc')
-hd-image: mksfs statfs
+hd-image: mksfs statfs fd-image
 	@echo "==> Creating SFS HDD boot image ..."
 	rm -f hd_boot.bin
 	cp -f ../../../sfsboot/1st/1stboot hd_boot.bin
@@ -28,7 +41,6 @@ hd-image: mksfs statfs
 	./statfs hd_boot.bin mkdir /system
 	./statfs hd_boot.bin write /system/2ndboot ../../../sfsboot/2nd/2ndboot
 	./statfs hd_boot.bin write /system/btron386 ../../../kernel/BTRON/make/btron
-	../../../sfsboot/mkmap hd_boot.bin /system/2ndboot | ../../../sfsboot/mkboot hd_boot.bin
 	@echo "==> hd_boot.bin created."
 
 mksfs-e: mkfs.no $(NLIBS) $(NKERNLIBS)

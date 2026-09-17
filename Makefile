@@ -32,8 +32,9 @@ pc:
 	# 4. Create HDD SFS image with bootloader + 2ndboot + btron
 	$(MAKE) -C kernel/POSIX/mkfs hd-image \
 	    HOST_CC="$(HOST_CC)"
-	# 5. Convert raw disk image to qcow2 for QEMU
-	cp kernel/POSIX/mkfs/hd_boot.bin ./1st_fd.img
+	# 5. Prepare boot floppy (fd.img) and HDD (hda.qcow2) for QEMU
+	cp kernel/POSIX/mkfs/fd_boot.bin ./fd.img
+	cp kernel/POSIX/mkfs/fd_boot.bin ./1st_fd.img
 	$(QEMU_IMG) convert -f raw -O qcow2 kernel/POSIX/mkfs/hd_boot.bin hda.qcow2
 	@echo "==> Done. Run:  make run-pc"
 

@@ -32,7 +32,7 @@ struct status
 };
 
 struct status		fd_status;
-static int		intr_flag = FALSE;
+static volatile int	intr_flag = FALSE;
 
 static struct spec	fd_spec[] = 
 {
@@ -195,9 +195,8 @@ fd_recalibrate (BYTE drive)
   
   cbuff[0] = FDC_RECALIBRATE;                   /* リキャリブレート */ 
   cbuff[1] = drive;
-  write_commands(2, cbuff);
-
   intr_flag = FALSE;	                        /* 割り込み待ち */
+  write_commands(2, cbuff);
   wait_int (&intr_flag);               
   fdc_isense ();                                /* 実行結果の受取 */
 
@@ -224,9 +223,8 @@ fd_seek (BYTE drive, int head, int cylinder, int motor)
   cbuff[0] = FDC_SEEK;                          /* シーク */
   cbuff[1] = (head << 2) | (drive & 0x03);
   cbuff[2] = cylinder;
-  write_commands(3, cbuff);
-  
   intr_flag = FALSE;                            /* 割り込み待ち */
+  write_commands(3, cbuff);
   wait_int (&intr_flag);
   fdc_isense ();                                /* 実行結果の受取 */
 
@@ -327,9 +325,8 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     cbuff[6] = HD_SECTOR;
     cbuff[7] = HD_GAP;
     cbuff[8] = HD_DTL;
-    write_commands(9, cbuff);
-    
     intr_flag = FALSE;
+    write_commands(9, cbuff);
     wait_int (&intr_flag);                                      /* 割り込み待ち */
 
     if(fdc_sense () == FALSE)                                   /* エラーチェック */

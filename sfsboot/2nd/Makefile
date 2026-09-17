@@ -1,8 +1,8 @@
 # sfsboot/2nd/Makefile
 # Updated for modern LLVM/Clang cross-compilation.
-# Accepts X86_CC, X86_LD, NASM, HOST_CC from parent (Rules.mk).
+include ../../Rules.mk
 
-CC      := $(if $(X86_CC),$(X86_CC),gcc -m32)
+CC      := $(if $(X86_CC),$(X86_CC),clang --target=i686-none-elf -march=i386 -mno-sse -mno-mmx)
 LD      := $(if $(X86_LD),$(X86_LD),ld -m elf_i386)
 NASM    ?= nasm
 HOST_CC := $(if $(HOST_CC),$(HOST_CC),cc)
@@ -45,7 +45,7 @@ INCPATH = -I. -I$(COMMON) -I$(ITRON) -I$(ITRON)/h
 
 # -mno-80387: Clang equivalent of -msoft-float for x87 avoidance
 # -std=gnu89 + -Wno-implicit-function-declaration: K&R implicit declarations
-NOFLAGS=-c -mno-80387 -fno-builtin -std=gnu89 \
+NOFLAGS=-c -march=i386 -mno-sse -mno-mmx -mno-80387 -fno-builtin -std=gnu89 \
         -Wno-implicit-function-declaration -Wno-return-type \
         -D__LINUX__ -DSUPPORT_144 $(DEBUG) -DIBMPC $(HDBOOT) $(INCPATH)
 CFLAGS=-O $(NOFLAGS)
