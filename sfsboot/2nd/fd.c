@@ -103,12 +103,16 @@ void
 write_fdc (int value)
 {
   int status;
+  int i;
 
-  for(;;) {
+  for(i = 0; i < 10000; i++) {
     status = inb(FDC_STAT);               
     if((status & (FDC_MASTER | FDC_DIN)) == (FDC_MASTER | 0)) {
       outb(FDC_DATA, value);
-      break;
+      return;
+    }
+    if((status & (FDC_MASTER | FDC_DIN)) == (FDC_MASTER | FDC_DIN)) {
+      inb(FDC_DATA);
     }
   }
 }
@@ -140,8 +144,15 @@ write_commands(int n, BYTE* buff)
 int
 init_fd (void)
 {
+  int i;
+
   set_idt (38, 0x08, (int)int38_handler, INTERRUPT_DESC, 0);
   reset_intr_mask (6);
+
+  /* Drain any pending interrupts left by BIOS/bootloader */
+  for (i = 0; i < 4; i++) {
+    fdc_isense ();
+  }
 
   fd_reset();
   recalibrate_flag = FALSE;	            
@@ -194,16 +205,12 @@ fd_recalibrate (BYTE drive)
   BYTE cbuff[2];
   
   boot_printf ("fd_recalibrate...\n");
+  on_motor (drive);
   cbuff[0] = FDC_RECALIBRATE;                   /* リキャリブレート */ 
   cbuff[1] = drive;
   intr_flag = FALSE;	                        /* 割り込み待ち */
-  boot_printf ("wc...\n");
-  if (!write_commands(2, cbuff)) {
-    boot_printf ("write_commands failed!\n");
-  }
-  boot_printf ("wait_int...\n");
+  write_commands(2, cbuff);
   wait_int (&intr_flag);               
-  boot_printf ("isense...\n");
   fdc_isense ();                                /* 実行結果の受取 */
   boot_printf ("fd_recalibrate done.\n");
 
@@ -257,20 +264,21 @@ fdc_isense (void)
 {
   int	result_nr = 0;
   int	status;
+  int	i;
 
   write_fdc (FDC_SENSE);
 
-  status = inb (FDC_STAT) & (FDC_MASTER | FDC_DIN | FDC_BUSY);
-  for (;;)
+  for (i = 0; i < 10000; i++)
     {
+      status = inb (FDC_STAT) & (FDC_MASTER | FDC_DIN | FDC_BUSY);
       if (status == (FDC_MASTER | FDC_DIN | FDC_BUSY)) 
 	{
-	  if (result_nr >= 8) 
-	    break;	/* too many results */
-	  fd_status.status_data[result_nr++] = inb (FDC_DATA);
+	  if (result_nr < 8) 
+	    fd_status.status_data[result_nr++] = inb (FDC_DATA);
+	  else
+	    inb (FDC_DATA);
 	}
-      status = inb (FDC_STAT) & (FDC_MASTER | FDC_DIN | FDC_BUSY);
-      if (status == FDC_MASTER) 
+      else if (status == FDC_MASTER) 
 	{	/* all read */
 	  return (TRUE);
 	}
@@ -336,18 +344,26 @@ fd_read_sector(BYTE drive, int cylinder, int head, int sector, BYTE* buff)
     write_commands(9, cbuff);
     wait_int (&intr_flag);                                      /* 割り込み待ち */
 
-    if(fdc_sense () == FALSE)                                   /* エラーチェック */
+    if(fdc_sense () == FALSE) {                                  /* エラーチェック */
+      boot_printf("sense fail C%d H%d S%d\n", cylinder, head, sector);
       continue;
+    }
+    boot_printf("ST:%02x %02x %02x n:%d %d %d\n",
+      fd_status.status_data[0], fd_status.status_data[1],
+      fd_status.status_data[2], fd_status.status_data[3],
+      fd_status.status_data[4], fd_status.status_data[5]);
     if ((fd_status.status_data[0] & 0xF8) != 0x00) 
       continue;
     if ((fd_status.status_data[1] | fd_status.status_data[2]) != 0x00)
       continue;
 
-    s = fd_status.status_data[3] * HD_HEAD * HD_SECTOR                   /* 読み込んだセクター数を計算 */
-      + fd_status.status_data[4] * HD_SECTOR + fd_status.status_data[5]; 
-    s = s - (cylinder * HD_HEAD * HD_SECTOR + head * HD_SECTOR + sector);     
-    if (s  != 1) 
+    s = fd_status.status_data[3] * HD_HEAD * HD_SECTOR
+      + fd_status.status_data[4] * HD_SECTOR + fd_status.status_data[5];
+    s = s - (cylinder * HD_HEAD * HD_SECTOR + head * HD_SECTOR + sector);
+    if (s  != 1) {
+      boot_printf("scnt=%d\n", s);
       continue;
+    }
     
     bcopy((void*)FD_DMA_BUFF, buff, HD_LENGTH);
     return TRUE;                                                /* 正常終了 */ 
@@ -374,6 +390,7 @@ fd_read (int drive, int part, int blockno, BYTE *buff, int length)
   int	readcount;
 
   on_motor (0);
+  boot_printf("fd_read: drive=%d blk=%d len=%d\n", drive, blockno, length);
 
   for (readcount = 0; readcount < length; readcount++) {
  
